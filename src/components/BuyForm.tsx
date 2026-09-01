@@ -14,7 +14,7 @@ const MAX_USD = 10_000_000;
 const INTENT_WINDOW_MS = 15 * 60 * 1000;
 
 export default function BuyForm() {
-  const { address, isConnected, openConnectModal, referralCode } = useWallet();
+  const { address, isConnected, openConnectModal, referredByCode } = useWallet();
   const { data: tier } = useTierCurrent();
 
   const [methodKey, setMethodKey] = useState<PaymentMethodKey>('ETH');
@@ -100,7 +100,7 @@ export default function BuyForm() {
         chain: method.chain,
         crypto: method.crypto,
         usd_amount: usdNumber,
-        ...(referralCode ? { referral_code: referralCode } : {}),
+        ...(referredByCode ? { referral_code: referredByCode } : {}),
       });
       setIntent(res);
     } catch (err) {
@@ -176,10 +176,8 @@ export default function BuyForm() {
             </div>
           </div>
 
-          {referralCode && (
-            <p className="mt-3 text-xs text-ink-dim">
-              Referral <Mono className="text-primary">{referralCode}</Mono> will be applied.
-            </p>
+          {referredByCode && (
+            <p className="mt-3 text-xs text-green">30% referral bonus will be applied to your purchase.</p>
           )}
 
           <Button className="mt-5 w-full" onClick={handleBuy} disabled={submitting || !!validationError || usdNumber <= 0}>

@@ -77,6 +77,9 @@ export default function ReferralTab() {
           </Button>
         </div>
         {shareUrl && <Mono className="mt-2 block break-all text-xs text-ink-faint">{shareUrl}</Mono>}
+        <p className="mt-3 text-xs text-ink-dim">
+          When someone buys using your code, you earn <span className="font-semibold text-green">15% of their purchase</span> as bonus.
+        </p>
       </Card>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">

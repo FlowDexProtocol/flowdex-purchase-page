@@ -34,6 +34,8 @@ interface WalletContextValue {
   isConnecting: boolean;
   token: string | null;
   referralCode: string | null;
+  /** The code that referred THIS buyer (from ?ref=), never the buyer's own code. */
+  referredByCode: string | null;
   isNewBuyer: boolean;
   summary: WalletConnectResponse['summary'] | null;
   terminalCredits: number;
@@ -55,6 +57,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
   const [token, setToken] = useState<string | null>(null);
   const [referralCode, setReferralCode] = useState<string | null>(null);
+  const [referredByCode, setReferredByCode] = useState<string | null>(null);
   const [isNewBuyer, setIsNewBuyer] = useState(false);
   const [summary, setSummary] = useState<WalletConnectResponse['summary'] | null>(null);
   const [terminalCredits, setTerminalCredits] = useState(0);
@@ -89,13 +92,25 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       }, SESSION_MS);
 
       if (typeof window !== 'undefined') {
-        const ref = new URLSearchParams(window.location.search).get('ref');
-        const key = `${addr}:${ref}`;
-        if (ref && !referralAppliedRef.current.has(key)) {
-          referralAppliedRef.current.add(key);
-          applyReferral({ buyer_wallet: addr, referral_code: ref }).catch(() => {
-            // Invalid/self/already-referred codes are non-fatal — ignore silently.
-          });
+        const rawRef = new URLSearchParams(window.location.search).get('ref');
+        const ref = rawRef ? rawRef.trim().toUpperCase() : null;
+        const ownCode = res.referral_code ? res.referral_code.toUpperCase() : null;
+        const isSelfReferral = !!ref && !!ownCode && ref === ownCode;
+
+        if (ref && !isSelfReferral) {
+          // This is the code that referred THIS buyer — never the buyer's own
+          // code — so it's what gets shown/applied on their own purchase.
+          setReferredByCode(ref);
+
+          const key = `${addr}:${ref}`;
+          if (!referralAppliedRef.current.has(key)) {
+            referralAppliedRef.current.add(key);
+            applyReferral({ buyer_wallet: addr, referral_code: ref }).catch(() => {
+              // Invalid/self/already-referred codes are non-fatal — ignore silently.
+            });
+          }
+        } else {
+          setReferredByCode(null);
         }
       }
 
@@ -121,6 +136,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       connectedWalletRef.current = null;
       setToken(null);
       setReferralCode(null);
+      setReferredByCode(null);
       setSummary(null);
       setTerminalCredits(0);
       setPendingClaims([]);
@@ -139,6 +155,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     connectedWalletRef.current = null;
     setToken(null);
     setReferralCode(null);
+    setReferredByCode(null);
     setSummary(null);
     setTerminalCredits(0);
     setPendingClaims([]);
@@ -181,6 +198,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       isConnecting,
       token,
       referralCode,
+      referredByCode,
       isNewBuyer,
       summary,
       terminalCredits,
@@ -200,6 +218,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       isConnecting,
       token,
       referralCode,
+      referredByCode,
       isNewBuyer,
       summary,
       terminalCredits,

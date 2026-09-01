@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import QRCode from 'react-qr-code';
 import { useWeb3ModalProvider } from '@web3modal/ethers/react';
 import { useWallet } from '@/context/wallet-context';
 import { useTierCurrent } from '@/lib/hooks';
-import { ApiError, getPrice, postPurchaseIntent } from '@/lib/api';
+import { ApiError, applyReferral, getPrice, postPurchaseIntent } from '@/lib/api';
 import { checkEvmBalance } from '@/lib/balance';
 import { PAYMENT_METHODS, type PaymentMethodKey } from '@/lib/types';
 import { formatDuration, formatNumber, formatPrice, formatTokens, formatUsd, toNum } from '@/lib/format';
@@ -15,9 +15,10 @@ import type { PurchaseIntentResponse } from '@/lib/types';
 const MIN_USD = 10;
 const MAX_USD = 10_000_000;
 const INTENT_WINDOW_MS = 15 * 60 * 1000;
+const REFERRAL_CODE_RE = /^FDX-[A-Z0-9]{4}-[A-Z0-9]{4}$/;
 
 export default function BuyForm() {
-  const { address, isConnected, openConnectModal, referredByCode } = useWallet();
+  const { address, isConnected, openConnectModal, referralCode, referredByCode } = useWallet();
   const { walletProvider } = useWeb3ModalProvider();
   const { data: tier } = useTierCurrent();
 
@@ -33,6 +34,11 @@ export default function BuyForm() {
   const [remainingMs, setRemainingMs] = useState(0);
   const [checkingBalance, setCheckingBalance] = useState(false);
   const [balanceWarning, setBalanceWarning] = useState<{ balance: number; required: number; symbol: string } | null>(null);
+
+  const [showReferralInput, setShowReferralInput] = useState(false);
+  const [referralInput, setReferralInput] = useState('');
+  const referralSeededRef = useRef(false);
+  const referralAppliedRef = useRef<string | null>(null);
 
   const method = useMemo(() => PAYMENT_METHODS.find((m) => m.key === methodKey)!, [methodKey]);
   const usdNumber = parseFloat(usdAmount) || 0;
@@ -86,6 +92,49 @@ export default function BuyForm() {
     return null;
   }, [usdAmount, usdNumber]);
 
+  // Pre-fill the referral input from the ?ref= code the wallet already
+  // resolved, once — never overwrite anything the buyer has typed themselves.
+  useEffect(() => {
+    if (referredByCode && !referralSeededRef.current) {
+      referralSeededRef.current = true;
+      setReferralInput(referredByCode);
+      setShowReferralInput(true);
+    }
+  }, [referredByCode]);
+
+  // Editing the amount or payment method invalidates a stale balance
+  // warning — clear it so the Buy button un-sticks instead of staying
+  // permanently disabled.
+  useEffect(() => {
+    setBalanceWarning(null);
+  }, [usdAmount, methodKey]);
+
+  type ReferralValidation =
+    | { state: 'empty' }
+    | { state: 'invalid_format' }
+    | { state: 'self' }
+    | { state: 'valid'; code: string };
+
+  const referralValidation = useMemo<ReferralValidation>(() => {
+    const code = referralInput.trim().toUpperCase();
+    if (!code) return { state: 'empty' };
+    if (!REFERRAL_CODE_RE.test(code)) return { state: 'invalid_format' };
+    if (referralCode && code === referralCode.toUpperCase()) return { state: 'self' };
+    return { state: 'valid', code };
+  }, [referralInput, referralCode]);
+
+  const effectiveReferralCode = referralValidation.state === 'valid' ? referralValidation.code : null;
+
+  // Best-effort link of a freshly-entered, validated code — errors (e.g.
+  // already referred, code doesn't exist) are non-fatal; the checkmark
+  // above is driven by client-side validation, not this call's outcome.
+  useEffect(() => {
+    if (!address || !effectiveReferralCode) return;
+    if (referralAppliedRef.current === effectiveReferralCode) return;
+    referralAppliedRef.current = effectiveReferralCode;
+    applyReferral({ buyer_wallet: address, referral_code: effectiveReferralCode }).catch(() => {});
+  }, [address, effectiveReferralCode]);
+
   async function createIntent() {
     setSubmitting(true);
     setSubmitError(null);
@@ -95,7 +144,7 @@ export default function BuyForm() {
         chain: method.chain,
         crypto: method.crypto,
         usd_amount: usdNumber,
-        ...(referredByCode ? { referral_code: referredByCode } : {}),
+        ...(effectiveReferralCode ? { referral_code: effectiveReferralCode } : {}),
       });
       setIntent(res);
     } catch (err) {
@@ -212,14 +261,55 @@ export default function BuyForm() {
             </div>
           </div>
 
-          {referredByCode && (
-            <p className="mt-3 text-xs text-green">30% referral bonus will be applied to your purchase.</p>
-          )}
+          <div className="mt-4">
+            {!showReferralInput ? (
+              <button
+                type="button"
+                onClick={() => setShowReferralInput(true)}
+                className="text-xs font-medium text-ink-faint hover:text-primary"
+              >
+                Have a referral code?
+              </button>
+            ) : (
+              <div>
+                <label htmlFor="referral" className="mb-1.5 block text-xs font-medium text-ink-faint">
+                  Have a referral code?
+                </label>
+                <input
+                  id="referral"
+                  value={referralInput}
+                  onChange={(e) => setReferralInput(e.target.value.toUpperCase())}
+                  placeholder="Enter code (e.g. FDX-XXXX-XXXX)"
+                  className="w-full rounded-lg border border-border bg-bg-soft px-3 py-2.5 font-mono text-sm text-ink outline-none focus:border-primary/60"
+                />
+                {referralValidation.state === 'valid' && (
+                  <p className="mt-1.5 flex items-center gap-1.5 text-xs text-green">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="shrink-0" aria-hidden="true">
+                      <path
+                        d="m5 13 4 4L19 7"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                    30% bonus will be applied to your purchase.
+                  </p>
+                )}
+                {referralValidation.state === 'invalid_format' && (
+                  <p className="mt-1.5 text-xs text-red">Invalid code format</p>
+                )}
+                {referralValidation.state === 'self' && (
+                  <p className="mt-1.5 text-xs text-red">You cannot use your own referral code</p>
+                )}
+              </div>
+            )}
+          </div>
 
           <Button
             className="mt-5 w-full"
             onClick={handleBuy}
-            disabled={submitting || checkingBalance || !!validationError || usdNumber <= 0}
+            disabled={submitting || checkingBalance || !!balanceWarning || !!validationError || usdNumber <= 0}
           >
             {checkingBalance ? (
               <>
@@ -229,6 +319,8 @@ export default function BuyForm() {
               <>
                 <Spinner className="h-4 w-4" /> Creating intent…
               </>
+            ) : balanceWarning ? (
+              'Insufficient Balance'
             ) : !isConnected ? (
               'Connect Wallet to Buy'
             ) : (

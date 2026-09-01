@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import QRCode from 'react-qr-code';
+import { useWeb3ModalProvider } from '@web3modal/ethers/react';
 import { useWallet } from '@/context/wallet-context';
 import { useTierCurrent } from '@/lib/hooks';
 import { ApiError, getPrice, postPurchaseIntent } from '@/lib/api';
@@ -17,6 +18,7 @@ const INTENT_WINDOW_MS = 15 * 60 * 1000;
 
 export default function BuyForm() {
   const { address, isConnected, openConnectModal, referredByCode } = useWallet();
+  const { walletProvider } = useWeb3ModalProvider();
   const { data: tier } = useTierCurrent();
 
   const [methodKey, setMethodKey] = useState<PaymentMethodKey>('ETH');
@@ -121,11 +123,18 @@ export default function BuyForm() {
       return;
     }
 
-    // Best-effort on-chain balance check — informational, and only possible
-    // for EVM-payable methods (checkEvmBalance returns null for TRC-20/SOL/BTC
-    // or if the RPC call fails, in which case we just proceed normally).
+    // On-chain balance check, run BEFORE creating the purchase intent.
+    // checkEvmBalance returns null only for non-EVM payment methods
+    // (TRC-20 USDT, SOL, BTC) — there's no wallet-connected EVM provider
+    // that could ever check those, so those skip the check entirely.
+    // Everything else fails CLOSED: any RPC error, timeout, or missing
+    // provider resolves to "insufficient" rather than silently proceeding.
     setCheckingBalance(true);
-    const result = await checkEvmBalance(method.key, method.chain, address, cryptoEquivalent).catch(() => null);
+    const result = await checkEvmBalance(method.key, method.chain, walletProvider, address, cryptoEquivalent).catch((err) => {
+      console.log('Balance check: unexpected error', err);
+      console.log('Balance check: insufficient');
+      return { sufficient: false, balance: 0 };
+    });
     setCheckingBalance(false);
 
     if (result && !result.sufficient) {

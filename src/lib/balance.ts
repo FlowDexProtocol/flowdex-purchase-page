@@ -1,79 +1,96 @@
 // ══════════════════════════════════════════════════
 // src/lib/balance.ts
-// Best-effort on-chain balance check for EVM payment methods.
+// On-chain balance check for EVM payment methods, using the wallet's own
+// connected provider (never a separate public RPC) — so it always checks
+// whatever chain the wallet actually happens to be on (mainnet, a testnet,
+// whatever), with zero risk of CORS/rate-limit failures from a third-party
+// RPC endpoint.
 //
-// Queries a dedicated public RPC for the payment method's own chain,
-// keyed by the connected wallet's address — NOT the wallet's currently
-// injected provider — so this never needs (or triggers) a network switch.
-// Non-EVM methods (TRC-20 USDT, SOL, BTC) can't be checked this way and
-// are skipped entirely by the caller.
+// Fails CLOSED: any error, timeout, or unexpected condition resolves to
+// "insufficient" (balance 0) rather than silently letting the purchase
+// proceed unchecked. The only case that skips the check entirely is a
+// payment method whose chain isn't EVM at all (TRC-20 USDT, SOL, BTC) —
+// there's no wallet-connected EVM provider that could ever answer that.
 // ══════════════════════════════════════════════════
 
-import { Contract, JsonRpcProvider, formatUnits } from 'ethers';
-import { CHAINS } from './web3modal';
+import { BrowserProvider, Contract, formatUnits, type Eip1193Provider } from 'ethers';
 import type { PaymentMethodKey } from './types';
 
-// Internal `chain` string (from PAYMENT_METHODS) -> chainId, limited to the
-// chains we actually have an RPC for in CHAINS.
-const EVM_CHAIN_IDS: Record<string, number> = {
-  ethereum: 1,
-  bsc: 56,
-  polygon: 137,
-  arbitrum: 42161,
-  base: 8453,
-};
+const EVM_CHAINS = new Set(['ethereum', 'bsc', 'polygon', 'arbitrum', 'base']);
 
 // Native-currency payment methods (checked via provider.getBalance).
 const NATIVE_METHODS = new Set<PaymentMethodKey>(['ETH', 'BNB']);
 
-// ERC-20 contract addresses per chain, lowercased so a mismatched EIP-55
-// checksum can never throw at runtime — only the underlying hex matters.
-const ERC20_CONTRACTS: Partial<Record<PaymentMethodKey, Partial<Record<number, string>>>> = {
-  'USDT-ERC20': { 1: '0xdAC17F958D2ee523a2206206994597C13D831ec7'.toLowerCase() },
-  USDC: { 1: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'.toLowerCase() },
-  // Not currently offered as payment methods, kept for future BSC stablecoin support.
-  // BSC USDT: 0x55d398326f99059fF775485246999027B3197955
-  // BSC USDC: 0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d
+// ERC-20 contract addresses, lowercased so a mismatched EIP-55 checksum can
+// never throw at runtime — only the underlying hex matters.
+const ERC20_CONTRACTS: Partial<Record<PaymentMethodKey, string>> = {
+  'USDT-ERC20': '0xdAC17F958D2ee523a2206206994597C13D831ec7'.toLowerCase(),
+  USDC: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'.toLowerCase(),
 };
 
 const ERC20_ABI = ['function balanceOf(address) view returns (uint256)', 'function decimals() view returns (uint8)'];
+
+export function isEvmChain(chain: string): boolean {
+  return EVM_CHAINS.has(chain);
+}
 
 export interface BalanceCheckResult {
   sufficient: boolean;
   balance: number;
 }
 
-// Returns null when this payment method isn't EVM-checkable (skip the check
-// entirely) or when the RPC call fails (treated as "can't verify" upstream).
+// Returns null ONLY when this payment method's chain isn't EVM at all
+// (skip the check entirely, per spec). For every EVM-payable method this
+// always resolves to a definitive result — falling back to `insufficient`
+// on any failure instead of throwing or returning null.
 export async function checkEvmBalance(
   methodKey: PaymentMethodKey,
   chain: string,
+  walletProvider: Eip1193Provider | undefined,
   address: string,
   requiredAmount: number
 ): Promise<BalanceCheckResult | null> {
-  const chainId = EVM_CHAIN_IDS[chain];
-  if (!chainId) return null; // non-EVM chain (tron/solana/bitcoin) — not checkable here
+  if (!isEvmChain(chain)) return null;
 
-  const rpcUrl = CHAINS.find((c) => c.chainId === chainId)?.rpcUrl;
-  if (!rpcUrl) return null;
+  if (!walletProvider) {
+    console.log(`Balance check: chain=unknown, token=${methodKey}, balance=0, required=${requiredAmount} (no wallet provider)`);
+    console.log('Balance check: insufficient');
+    return { sufficient: false, balance: 0 };
+  }
 
-  const provider = new JsonRpcProvider(rpcUrl);
-
+  let chainId: number | string = 'unknown';
   try {
+    const provider = new BrowserProvider(walletProvider);
+    const network = await provider.getNetwork();
+    chainId = Number(network.chainId);
+
+    let balance: number;
     if (NATIVE_METHODS.has(methodKey)) {
       const raw = await provider.getBalance(address);
-      const balance = parseFloat(formatUnits(raw, 18));
-      return { sufficient: balance >= requiredAmount, balance };
+      balance = parseFloat(formatUnits(raw, 18));
+    } else {
+      const contractAddress = ERC20_CONTRACTS[methodKey];
+      if (!contractAddress) {
+        console.log(`Balance check: chain=${chainId}, token=${methodKey}, balance=0, required=${requiredAmount} (no contract configured)`);
+        console.log('Balance check: insufficient');
+        return { sufficient: false, balance: 0 };
+      }
+      const contract = new Contract(contractAddress, ERC20_ABI, provider);
+      const [raw, decimals] = await Promise.all([contract.balanceOf(address), contract.decimals()]);
+      balance = parseFloat(formatUnits(raw, decimals));
     }
 
-    const contractAddress = ERC20_CONTRACTS[methodKey]?.[chainId];
-    if (!contractAddress) return null;
-
-    const contract = new Contract(contractAddress, ERC20_ABI, provider);
-    const [raw, decimals] = await Promise.all([contract.balanceOf(address), contract.decimals()]);
-    const balance = parseFloat(formatUnits(raw, decimals));
-    return { sufficient: balance >= requiredAmount, balance };
-  } catch {
-    return null;
+    console.log(`Balance check: chain=${chainId}, token=${methodKey}, balance=${balance}, required=${requiredAmount}`);
+    const sufficient = balance > 0 && balance >= requiredAmount;
+    console.log(sufficient ? 'Balance check: sufficient' : 'Balance check: insufficient');
+    return { sufficient, balance };
+  } catch (err) {
+    console.log(
+      `Balance check: chain=${chainId}, token=${methodKey}, balance=0, required=${requiredAmount} (error: ${
+        err instanceof Error ? err.message : String(err)
+      })`
+    );
+    console.log('Balance check: insufficient');
+    return { sufficient: false, balance: 0 };
   }
 }

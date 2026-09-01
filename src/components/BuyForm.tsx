@@ -256,7 +256,7 @@ export default function BuyForm() {
             </div>
             <div className="rounded-lg border border-border bg-bg-soft p-3">
               <p className="text-xs text-ink-dim">Estimated $FDP</p>
-              <Mono className="mt-1 block text-base font-bold text-primary">{formatTokens(fdpEstimate, 2)}</Mono>
+              <Mono className="mt-1 block text-base font-bold text-green">{formatTokens(fdpEstimate, 2)}</Mono>
               {tierPrice > 0 && <Mono className="mt-0.5 block text-[11px] text-ink-faint">at {formatPrice(tierPrice)}/token</Mono>}
             </div>
           </div>
@@ -426,7 +426,7 @@ export default function BuyForm() {
                 </div>
                 <div>
                   <p className="text-ink-dim">$FDP estimated</p>
-                  <Mono className="text-ink">{formatTokens(intent.tokens_estimated)}</Mono>
+                  <Mono className="text-green">{formatTokens(intent.tokens_estimated)}</Mono>
                 </div>
               </div>
 

@@ -111,10 +111,7 @@ export function ProgressBar({ pct, className = '' }: { pct: number; className?: 
   const clamped = Math.min(100, Math.max(0, pct));
   return (
     <div className={`h-2.5 w-full overflow-hidden rounded-full bg-white/5 ${className}`}>
-      <div
-        className="h-full rounded-full bg-gradient-to-r from-primary to-purple transition-[width] duration-700 ease-out"
-        style={{ width: `${clamped}%` }}
-      />
+      <div className="h-full rounded-full bg-green transition-[width] duration-700 ease-out" style={{ width: `${clamped}%` }} />
     </div>
   );
 }

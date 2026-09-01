@@ -51,7 +51,7 @@ export default function MarketCapScenarios() {
               <Mono className="mt-1 block text-sm text-ink-dim">${s.price.toFixed(2)}</Mono>
               <div className="mt-4 border-t border-border pt-3">
                 <p className="text-[11px] uppercase tracking-widest text-ink-faint">Your $FDP worth</p>
-                <Mono className="mt-1 block text-base font-bold text-ink">{formatUsd(tokenAmount * s.price)}</Mono>
+                <Mono className="mt-1 block text-base font-bold text-green">{formatUsd(tokenAmount * s.price)}</Mono>
               </div>
               <Mono className="mt-2 block text-[11px] text-ink-faint">{formatCompactUsd(s.mcap)} mcap</Mono>
             </Card>

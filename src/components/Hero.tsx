@@ -38,7 +38,7 @@ export default function Hero() {
               <p className="mt-1 text-sm text-ink-dim">All tiers have sold out. Thank you for backing FlowDex.</p>
             </div>
           ) : tier ? (
-            <div className="rounded-2xl border border-border bg-card p-6 text-left">
+            <div className="rounded-2xl border border-border bg-card p-6 text-left shadow-[0_0_50px_rgba(98,126,234,0.08)]">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
                   <p className="text-xs uppercase tracking-widest text-ink-dim">Current Tier</p>

@@ -51,6 +51,11 @@ createWeb3Modal({
   chains: CHAINS,
   projectId: projectId || 'MISSING_WALLETCONNECT_PROJECT_ID',
   defaultChain: CHAINS[0],
+  // Chain detection is informational only (see wallet-context's
+  // detectedChainName) — never force the wallet to switch networks, since
+  // the buyer's chosen payment method doesn't have to match their wallet's
+  // chain (e.g. paying with USDT TRC-20 or BTC from an EVM wallet).
+  allowUnsupportedChain: true,
   themeMode: 'dark',
   themeVariables: {
     '--w3m-color-mix': '#00B4D8',

@@ -1,9 +1,11 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import QRCode from 'react-qr-code';
 import { useWallet } from '@/context/wallet-context';
 import { useTierCurrent } from '@/lib/hooks';
 import { ApiError, getPrice, postPurchaseIntent } from '@/lib/api';
+import { checkEvmBalance } from '@/lib/balance';
 import { PAYMENT_METHODS, type PaymentMethodKey } from '@/lib/types';
 import { formatDuration, formatNumber, formatPrice, formatTokens, formatUsd, toNum } from '@/lib/format';
 import { Badge, Button, Card, CopyButton, ErrorNote, Mono, Section, SectionHeading, Spinner } from './ui';
@@ -27,6 +29,8 @@ export default function BuyForm() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [intent, setIntent] = useState<PurchaseIntentResponse | null>(null);
   const [remainingMs, setRemainingMs] = useState(0);
+  const [checkingBalance, setCheckingBalance] = useState(false);
+  const [balanceWarning, setBalanceWarning] = useState<{ balance: number; required: number; symbol: string } | null>(null);
 
   const method = useMemo(() => PAYMENT_METHODS.find((m) => m.key === methodKey)!, [methodKey]);
   const usdNumber = parseFloat(usdAmount) || 0;
@@ -80,23 +84,12 @@ export default function BuyForm() {
     return null;
   }, [usdAmount, usdNumber]);
 
-  async function handleBuy() {
-    setSubmitError(null);
-    setIntent(null);
-
-    if (!isConnected || !address) {
-      openConnectModal();
-      return;
-    }
-    if (validationError || usdNumber <= 0) {
-      setSubmitError(validationError || 'Enter a valid amount.');
-      return;
-    }
-
+  async function createIntent() {
     setSubmitting(true);
+    setSubmitError(null);
     try {
       const res = await postPurchaseIntent({
-        buyer_wallet: address,
+        buyer_wallet: address!,
         chain: method.chain,
         crypto: method.crypto,
         usd_amount: usdNumber,
@@ -112,6 +105,40 @@ export default function BuyForm() {
     } finally {
       setSubmitting(false);
     }
+  }
+
+  async function handleBuy() {
+    setSubmitError(null);
+    setIntent(null);
+    setBalanceWarning(null);
+
+    if (!isConnected || !address) {
+      openConnectModal();
+      return;
+    }
+    if (validationError || usdNumber <= 0) {
+      setSubmitError(validationError || 'Enter a valid amount.');
+      return;
+    }
+
+    // Best-effort on-chain balance check — informational, and only possible
+    // for EVM-payable methods (checkEvmBalance returns null for TRC-20/SOL/BTC
+    // or if the RPC call fails, in which case we just proceed normally).
+    setCheckingBalance(true);
+    const result = await checkEvmBalance(method.key, method.chain, address, cryptoEquivalent).catch(() => null);
+    setCheckingBalance(false);
+
+    if (result && !result.sufficient) {
+      setBalanceWarning({ balance: result.balance, required: cryptoEquivalent, symbol: method.crypto });
+      return;
+    }
+
+    await createIntent();
+  }
+
+  function handleProceedAnyway() {
+    setBalanceWarning(null);
+    createIntent();
   }
 
   return (
@@ -180,8 +207,16 @@ export default function BuyForm() {
             <p className="mt-3 text-xs text-green">30% referral bonus will be applied to your purchase.</p>
           )}
 
-          <Button className="mt-5 w-full" onClick={handleBuy} disabled={submitting || !!validationError || usdNumber <= 0}>
-            {submitting ? (
+          <Button
+            className="mt-5 w-full"
+            onClick={handleBuy}
+            disabled={submitting || checkingBalance || !!validationError || usdNumber <= 0}
+          >
+            {checkingBalance ? (
+              <>
+                <Spinner className="h-4 w-4" /> Checking balance…
+              </>
+            ) : submitting ? (
               <>
                 <Spinner className="h-4 w-4" /> Creating intent…
               </>
@@ -201,7 +236,48 @@ export default function BuyForm() {
 
         <Card className="lg:col-span-2">
           <p className="text-xs font-semibold uppercase tracking-widest text-ink-dim">Payment Instructions</p>
-          {!intent ? (
+          {balanceWarning ? (
+            <div className="mt-4 rounded-lg border border-amber bg-amber-dim p-4">
+              <div className="flex items-start gap-3">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  className="mt-0.5 shrink-0 text-amber"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M12 9v4m0 4h.01M10.29 3.86 1.82 18a1 1 0 0 0 .86 1.5h18.64a1 1 0 0 0 .86-1.5L13.71 3.86a1 1 0 0 0-1.72 0Z"
+                    stroke="currentColor"
+                    strokeWidth="1.75"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                <div>
+                  <p className="text-sm font-semibold text-amber">Insufficient Balance</p>
+                  <p className="mt-1.5 text-xs leading-relaxed text-ink-dim">
+                    Your wallet has{' '}
+                    <Mono className="text-ink">
+                      {formatNumber(balanceWarning.balance, 6)} {balanceWarning.symbol}
+                    </Mono>{' '}
+                    but this purchase requires{' '}
+                    <Mono className="text-ink">
+                      {formatNumber(balanceWarning.required, 6)} {balanceWarning.symbol}
+                    </Mono>
+                    . Please add funds to your wallet or reduce the purchase amount.
+                  </p>
+                  <button
+                    onClick={handleProceedAnyway}
+                    className="mt-3 text-xs font-semibold text-ink-faint underline decoration-dotted hover:text-ink"
+                  >
+                    Proceed anyway
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : !intent ? (
             <div className="mt-8 flex flex-col items-center justify-center gap-2 text-center text-sm text-ink-faint">
               <p>Submit a purchase to generate a deposit address and locked price.</p>
             </div>
@@ -226,6 +302,19 @@ export default function BuyForm() {
                 <div className="mt-1 flex items-center gap-2 rounded-lg border border-border bg-bg-soft p-3">
                   <Mono className="flex-1 break-all text-xs text-ink">{intent.receiving_address}</Mono>
                   <CopyButton value={intent.receiving_address} />
+                </div>
+              </div>
+
+              <div className="flex justify-center py-1">
+                <div className="w-[150px] rounded-lg bg-white p-2.5 sm:w-[180px]">
+                  <QRCode
+                    value={intent.receiving_address}
+                    size={180}
+                    bgColor="#FFFFFF"
+                    fgColor="#000000"
+                    style={{ height: 'auto', maxWidth: '100%', width: '100%' }}
+                    viewBox="0 0 180 180"
+                  />
                 </div>
               </div>
 

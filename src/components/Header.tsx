@@ -15,7 +15,7 @@ const NAV_LINKS = [
 ];
 
 function AccountMenu() {
-  const { address, isConnecting, isConnected, openConnectModal, disconnectWallet } = useWallet();
+  const { address, isConnecting, isConnected, openConnectModal, disconnectWallet, detectedChainName } = useWallet();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -43,6 +43,7 @@ function AccountMenu() {
       >
         <span className="h-2 w-2 rounded-full bg-green" />
         <Mono>{truncateWallet(address)}</Mono>
+        {detectedChainName && <span className="text-ink-faint">· {detectedChainName}</span>}
       </button>
       {open && (
         <div className="absolute right-0 mt-2 w-48 rounded-lg border border-border bg-card shadow-xl overflow-hidden z-50">

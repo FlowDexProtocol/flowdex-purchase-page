@@ -17,6 +17,8 @@
   --color-red-dim: rgba(239, 68, 68, 0.14);
   --color-purple: #9945ff;
   --color-purple-dim: rgba(153, 69, 255, 0.14);
+  --color-amber: #f59e0b;
+  --color-amber-dim: rgba(245, 158, 11, 0.12);
 }
 
 @theme inline {
@@ -36,6 +38,8 @@
   --color-red-dim: var(--color-red-dim);
   --color-purple: var(--color-purple);
   --color-purple-dim: var(--color-purple-dim);
+  --color-amber: var(--color-amber);
+  --color-amber-dim: var(--color-amber-dim);
   --font-sans: var(--font-dm-sans), system-ui, sans-serif;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
 }

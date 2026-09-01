@@ -21,8 +21,10 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { useDisconnect, useWeb3Modal, useWeb3ModalAccount } from '@web3modal/ethers/react';
+import { useDisconnect, useWeb3Modal, useWeb3ModalAccount, useWeb3ModalProvider } from '@web3modal/ethers/react';
+import { BrowserProvider } from 'ethers';
 import { ApiError, applyReferral, connectWallet as apiConnectWallet } from '@/lib/api';
+import { CHAINS } from '@/lib/web3modal';
 import type { WalletConnectResponse } from '@/lib/types';
 
 const SESSION_MS = 30 * 60 * 1000;
@@ -36,6 +38,8 @@ interface WalletContextValue {
   referralCode: string | null;
   /** The code that referred THIS buyer (from ?ref=), never the buyer's own code. */
   referredByCode: string | null;
+  /** Human-readable name of whatever chain the wallet is currently on — informational only, never restrictive. */
+  detectedChainName: string | null;
   isNewBuyer: boolean;
   summary: WalletConnectResponse['summary'] | null;
   terminalCredits: number;
@@ -53,11 +57,13 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const { open } = useWeb3Modal();
   const { address: rawAddress, chainId, isConnected } = useWeb3ModalAccount();
   const { disconnect } = useDisconnect();
+  const { walletProvider } = useWeb3ModalProvider();
   const address = rawAddress ? rawAddress.toLowerCase() : null;
 
   const [token, setToken] = useState<string | null>(null);
   const [referralCode, setReferralCode] = useState<string | null>(null);
   const [referredByCode, setReferredByCode] = useState<string | null>(null);
+  const [detectedChainName, setDetectedChainName] = useState<string | null>(null);
   const [isNewBuyer, setIsNewBuyer] = useState(false);
   const [summary, setSummary] = useState<WalletConnectResponse['summary'] | null>(null);
   const [terminalCredits, setTerminalCredits] = useState(0);
@@ -150,6 +156,32 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  // Informational-only chain detection — never blocks or prompts a switch.
+  // Re-runs whenever the wallet reports a different chainId (i.e. the user
+  // switched networks from inside their wallet, not something we triggered).
+  useEffect(() => {
+    if (!isConnected || !walletProvider) {
+      setDetectedChainName(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const provider = new BrowserProvider(walletProvider);
+        const network = await provider.getNetwork();
+        if (cancelled) return;
+        const known = CHAINS.find((c) => c.chainId === Number(network.chainId));
+        const fallbackName = network.name && network.name !== 'unknown' ? network.name : `Chain ${network.chainId}`;
+        setDetectedChainName(known?.name ?? fallbackName);
+      } catch {
+        if (!cancelled) setDetectedChainName(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isConnected, walletProvider, chainId]);
+
   const disconnectWallet = useCallback(async () => {
     if (sessionTimer.current) clearTimeout(sessionTimer.current);
     connectedWalletRef.current = null;
@@ -199,6 +231,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       token,
       referralCode,
       referredByCode,
+      detectedChainName,
       isNewBuyer,
       summary,
       terminalCredits,
@@ -219,6 +252,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       token,
       referralCode,
       referredByCode,
+      detectedChainName,
       isNewBuyer,
       summary,
       terminalCredits,

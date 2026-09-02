@@ -9,8 +9,21 @@ import { ApiError, applyReferral, getPrice, postPurchaseIntent } from '@/lib/api
 import { checkEvmBalance } from '@/lib/balance';
 import { PAYMENT_METHODS, type PaymentMethodKey } from '@/lib/types';
 import { formatDuration, formatNumber, formatPrice, formatTokens, formatUsd, toNum } from '@/lib/format';
-import { Badge, Button, Card, CopyButton, ErrorNote, Mono, Section, SectionHeading, Spinner } from './ui';
-import type { PurchaseIntentResponse } from '@/lib/types';
+import { Badge, Button, Card, CopyButton, ErrorNote, Mono, Section, SectionHeading, Spinner, VestingTimeline } from './ui';
+import type { PurchaseIntentResponse, TierCurrent } from '@/lib/types';
+
+// Referral bonus split — mirrors the published referral program terms
+// (also reflected in FaqSection/ReferralSection/ReferralTab copy):
+// the buyer who ENTERS a code gets 30%, the code's OWNER (referrer) gets
+// 15%, each split 30% tokens / 70% Terminal Credits. This is a pre-
+// confirmation ESTIMATE shown right after the buyer creates an intent —
+// nothing is actually allocated until the payment confirms on-chain, so
+// the Claims/Portfolio/Referral tabs read the real, already-confirmed
+// numbers from the backend instead of recomputing them.
+const BUYER_BONUS_PCT = 0.3;
+const REFERRER_BONUS_PCT = 0.15;
+const TOKEN_SHARE_PCT = 0.3;
+const CREDIT_SHARE_PCT = 0.7;
 
 const MIN_USD = 10;
 const MAX_USD = 10_000_000;
@@ -41,6 +54,9 @@ export default function BuyForm() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [intent, setIntent] = useState<PurchaseIntentResponse | null>(null);
+  const [intentUsdAmount, setIntentUsdAmount] = useState(0);
+  const [intentReferralCode, setIntentReferralCode] = useState<string | null>(null);
+  const [intentTier, setIntentTier] = useState<TierCurrent | null>(null);
   const [remainingMs, setRemainingMs] = useState(0);
   const [checkingBalance, setCheckingBalance] = useState(false);
   const [balanceWarning, setBalanceWarning] = useState<{ balance: number; required: number; symbol: string } | null>(null);
@@ -155,6 +171,9 @@ export default function BuyForm() {
         ...(effectiveReferralCode ? { referral_code: effectiveReferralCode } : {}),
       });
       setIntent(res);
+      setIntentUsdAmount(usdNumber);
+      setIntentReferralCode(effectiveReferralCode);
+      setIntentTier(tier && !tier.message ? tier : null);
     } catch (err) {
       if (err instanceof ApiError) {
         setSubmitError(err.message);
@@ -206,6 +225,44 @@ export default function BuyForm() {
     setBalanceWarning(null);
     createIntent();
   }
+
+  const vestingPreview = useMemo(() => {
+    if (!intent || !intentTier) return null;
+    const totalTokens = intent.tokens_estimated;
+    const tgePct = toNum(intentTier.tge_percentage);
+    const tgeTokens = totalTokens * (tgePct / 100);
+    const remainingTokens = totalTokens - tgeTokens;
+    return {
+      totalTokens,
+      tgePct,
+      tgeTokens,
+      remainingTokens,
+      cliffMonths: intentTier.cliff_months,
+      vestMonths: intentTier.vest_months,
+    };
+  }, [intent, intentTier]);
+
+  const referralBonusPreview = useMemo(() => {
+    if (!intent || !intentTier || !intentReferralCode) return null;
+    const tierPrice = toNum(intentTier.price);
+    if (tierPrice <= 0) return null;
+
+    const buyerBonusUsd = intentUsdAmount * BUYER_BONUS_PCT;
+    const buyerBonusTokens = (buyerBonusUsd * TOKEN_SHARE_PCT) / tierPrice;
+    const buyerCredits = buyerBonusUsd * CREDIT_SHARE_PCT;
+
+    const referrerBonusUsd = intentUsdAmount * REFERRER_BONUS_PCT;
+    const referrerBonusTokens = (referrerBonusUsd * TOKEN_SHARE_PCT) / tierPrice;
+    const referrerCredits = referrerBonusUsd * CREDIT_SHARE_PCT;
+
+    return {
+      buyerBonusTokens,
+      buyerCredits,
+      referrerBonusTokens,
+      referrerCredits,
+      totalBurned: buyerBonusTokens + referrerBonusTokens,
+    };
+  }, [intent, intentTier, intentReferralCode, intentUsdAmount]);
 
   return (
     <Section id="buy">
@@ -433,6 +490,73 @@ export default function BuyForm() {
             </div>
           )}
         </Card>
+
+        {vestingPreview && (
+          <Card className="lg:col-span-5">
+            <p className="text-sm font-semibold text-ink">Your Vesting Schedule</p>
+            <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
+              <div>
+                <p className="text-xs text-ink-dim">Total tokens</p>
+                <Mono className="mt-0.5 block text-base font-bold text-ink">{formatTokens(vestingPreview.totalTokens)} $FDP</Mono>
+              </div>
+              <div>
+                <p className="text-xs text-ink-dim">At TGE ({vestingPreview.tgePct}%)</p>
+                <Mono className="mt-0.5 block text-base font-bold text-primary">{formatTokens(vestingPreview.tgeTokens)} $FDP</Mono>
+                <p className="mt-0.5 text-xs text-ink-faint">Available immediately when tier closes</p>
+              </div>
+              <div>
+                <p className="text-xs text-ink-dim">Cliff period</p>
+                <Mono className="mt-0.5 block text-base font-bold text-ink">{vestingPreview.cliffMonths} months</Mono>
+                <p className="mt-0.5 text-xs text-ink-faint">No additional tokens released during this period</p>
+              </div>
+              <div>
+                <p className="text-xs text-ink-dim">Vesting ({vestingPreview.vestMonths} months)</p>
+                <Mono className="mt-0.5 block text-base font-bold text-ink">{formatTokens(vestingPreview.remainingTokens)} $FDP</Mono>
+                <p className="mt-0.5 text-xs text-ink-faint">Released linearly after the cliff</p>
+              </div>
+            </div>
+            <p className="mt-4 text-xs text-ink-faint">
+              Full unlock:{' '}
+              <span className="font-semibold text-ink">
+                {vestingPreview.cliffMonths + vestingPreview.vestMonths} months after tier close
+              </span>
+            </p>
+            <VestingTimeline
+              className="mt-5"
+              tgePct={vestingPreview.tgePct}
+              cliffMonths={vestingPreview.cliffMonths}
+              vestMonths={vestingPreview.vestMonths}
+            />
+          </Card>
+        )}
+
+        {referralBonusPreview && (
+          <Card className="lg:col-span-5">
+            <p className="text-sm font-semibold text-ink">Referral Bonus Applied</p>
+            <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="rounded-lg border border-border bg-bg-soft p-3">
+                <p className="text-xs text-ink-dim">Your bonus (30%)</p>
+                <Mono className="mt-0.5 block text-base font-bold text-green">
+                  {formatTokens(referralBonusPreview.buyerBonusTokens)} $FDP
+                </Mono>
+                <p className="mt-0.5 text-xs text-ink-faint">+ {formatUsd(referralBonusPreview.buyerCredits)} Terminal Credits</p>
+              </div>
+              <div className="rounded-lg border border-border bg-bg-soft p-3">
+                <p className="text-xs text-ink-dim">Referrer bonus (15%)</p>
+                <Mono className="mt-0.5 block text-base font-bold text-primary">
+                  {formatTokens(referralBonusPreview.referrerBonusTokens)} $FDP
+                </Mono>
+                <p className="mt-0.5 text-xs text-ink-faint">+ {formatUsd(referralBonusPreview.referrerCredits)} Terminal Credits</p>
+              </div>
+            </div>
+            <p className="mt-4 text-xs text-ink-dim">
+              Tokens burned:{' '}
+              <span className="font-semibold text-ink">{formatTokens(referralBonusPreview.totalBurned)} $FDP</span> permanently
+              removed from supply 🔥
+            </p>
+            <p className="mt-1.5 text-xs text-ink-faint">Terminal Credits redeemable when the Intelligence Terminal launches.</p>
+          </Card>
+        )}
 
         <p className="text-center text-xs text-ink-faint lg:col-span-5">
           Need help? Contact{' '}

@@ -4,8 +4,14 @@ import { useEffect, useState } from 'react';
 import { useWallet } from '@/context/wallet-context';
 import { getReferralCredits, getReferralList, getReferralStats } from '@/lib/api';
 import type { ReferralCredits, ReferralStats, ReferredUser } from '@/lib/types';
-import { formatDate, formatUsd, truncateWallet } from '@/lib/format';
+import { formatDate, formatTokens, formatUsd, toNum, truncateWallet } from '@/lib/format';
 import { Badge, Button, Card, EmptyState, ErrorNote, Mono, Spinner } from './ui';
+
+// The bonus-token share of a referral bonus is always 30% of its USD value
+// (the rest goes to Terminal Credits), so dividing back out gives the exact
+// tokens burned for that bonus — there's no per-referral burn field exposed
+// by the API, but this ratio is a fixed backend constant, not an estimate.
+const TOKEN_SHARE_PCT = 0.3;
 
 export default function ReferralTab() {
   const { address, referralCode: liveReferralCode } = useWallet();
@@ -130,52 +136,53 @@ export default function ReferralTab() {
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <Card>
-          <p className="text-xs uppercase tracking-widest text-ink-dim">Referrals</p>
+          <p className="text-xs uppercase tracking-widest text-ink-dim">Total Referrals</p>
           <Mono className="mt-1.5 block text-xl font-bold text-ink">{stats?.total_referral_purchases ?? 0}</Mono>
         </Card>
         <Card>
-          <p className="text-xs uppercase tracking-widest text-ink-dim">Volume</p>
+          <p className="text-xs uppercase tracking-widest text-ink-dim">Referral Volume</p>
           <Mono className="mt-1.5 block text-xl font-bold text-ink">{formatUsd(stats?.total_referral_volume_usd)}</Mono>
         </Card>
         <Card>
-          <p className="text-xs uppercase tracking-widest text-ink-dim">Earnings</p>
-          <Mono className="mt-1.5 block text-xl font-bold text-green">{formatUsd(stats?.total_referral_earnings_usd)}</Mono>
+          <p className="text-xs uppercase tracking-widest text-ink-dim">Your Token Earnings</p>
+          <Mono className="mt-1.5 block text-xl font-bold text-green">
+            {formatTokens(stats?.total_referral_earnings_tokens ?? 0)} $FDP
+          </Mono>
         </Card>
         <Card>
-          <p className="text-xs uppercase tracking-widest text-ink-dim">Terminal Credits</p>
+          <p className="text-xs uppercase tracking-widest text-ink-dim">Your Terminal Credits</p>
           <Mono className="mt-1.5 block text-xl font-bold text-purple">{formatUsd(credits?.total_credits ?? 0)}</Mono>
         </Card>
       </div>
 
-      {credits?.message && (
-        <p className="text-xs text-ink-faint">
-          {credits.message}. Expires {credits.expires}.
-        </p>
-      )}
-
       <Card>
-        <p className="mb-4 text-sm font-semibold text-ink">Referred Users</p>
+        <p className="mb-4 text-sm font-semibold text-ink">Earnings</p>
         {list.length === 0 ? (
           <EmptyState>No referrals yet — share your code to start earning.</EmptyState>
         ) : (
           <div className="-mx-2 overflow-x-auto">
-            <table className="w-full min-w-[520px] text-left text-sm">
+            <table className="w-full min-w-[720px] text-left text-sm">
               <thead>
                 <tr className="text-xs uppercase tracking-wider text-ink-dim">
-                  <th className="px-2 pb-2 font-medium">Wallet</th>
-                  <th className="px-2 pb-2 font-medium">Joined</th>
-                  <th className="px-2 pb-2 font-medium">Volume</th>
-                  <th className="px-2 pb-2 font-medium">Your Bonus</th>
-                  <th className="px-2 pb-2 font-medium">Status</th>
+                  <th className="px-2 pb-2 font-medium">Date</th>
+                  <th className="px-2 pb-2 font-medium">Friend</th>
+                  <th className="px-2 pb-2 font-medium">Their Purchase</th>
+                  <th className="px-2 pb-2 font-medium">Your 15% Bonus</th>
+                  <th className="px-2 pb-2 font-medium">Tokens Earned</th>
+                  <th className="px-2 pb-2 font-medium">Credits Earned</th>
+                  <th className="px-2 pb-2 font-medium">Tokens Burned 🔥</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {list.map((r) => (
                   <tr key={r.referred_wallet}>
+                    <td className="whitespace-nowrap px-2 py-2.5 text-ink-dim">{formatDate(r.first_purchase_at || r.created_at)}</td>
                     <td className="px-2 py-2.5">
                       <Mono>{truncateWallet(r.referred_wallet)}</Mono>
+                      <span className="ml-2">
+                        <Badge tone={r.has_purchased ? 'green' : 'neutral'}>{r.has_purchased ? 'Purchased' : 'Pending'}</Badge>
+                      </span>
                     </td>
-                    <td className="whitespace-nowrap px-2 py-2.5 text-ink-dim">{formatDate(r.created_at)}</td>
                     <td className="px-2 py-2.5">
                       <Mono>{formatUsd(r.total_volume_usd)}</Mono>
                     </td>
@@ -183,7 +190,13 @@ export default function ReferralTab() {
                       <Mono className="text-green">{formatUsd(r.referrer_bonus_usd)}</Mono>
                     </td>
                     <td className="px-2 py-2.5">
-                      <Badge tone={r.has_purchased ? 'green' : 'neutral'}>{r.has_purchased ? 'Purchased' : 'Pending'}</Badge>
+                      <Mono className="text-primary">{formatTokens(r.referrer_bonus_tokens)}</Mono>
+                    </td>
+                    <td className="px-2 py-2.5">
+                      <Mono className="text-purple">{formatUsd(r.referrer_terminal_credits)}</Mono>
+                    </td>
+                    <td className="px-2 py-2.5">
+                      <Mono className="text-ink-faint">{formatTokens(toNum(r.referrer_bonus_tokens) / TOKEN_SHARE_PCT)}</Mono>
                     </td>
                   </tr>
                 ))}
@@ -191,6 +204,27 @@ export default function ReferralTab() {
             </table>
           </div>
         )}
+      </Card>
+
+      <Card>
+        <p className="text-sm font-semibold text-ink">Token Burn Summary</p>
+        <p className="mt-2 text-sm text-ink-dim">
+          Total tokens burned from your referrals:{' '}
+          <Mono className="font-semibold text-ink">{formatTokens(stats?.total_tokens_burned ?? 0)}</Mono> $FDP 🔥
+        </p>
+        <p className="mt-1.5 text-xs text-ink-faint">Burning reduces total supply, increasing value for all holders.</p>
+      </Card>
+
+      <Card>
+        <p className="text-sm font-semibold text-ink">Terminal Credits</p>
+        <Mono className="mt-2 block text-2xl font-bold text-purple">{formatUsd(credits?.total_credits ?? 0)}</Mono>
+        <div className="mt-3 space-y-1 text-xs">
+          <p className="text-ink-dim">
+            Status: <span className="font-semibold text-ink">{credits?.status === 'active' ? 'Accumulating' : credits?.status || 'Accumulating'}</span>
+          </p>
+          <p className="text-ink-dim">Redeemable: {credits?.message || 'When the Intelligence Terminal launches'}</p>
+          <p className="text-ink-dim">Expires: {credits?.expires || '6 months after Terminal launch'}</p>
+        </div>
       </Card>
     </div>
   );

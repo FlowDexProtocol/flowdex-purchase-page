@@ -81,7 +81,7 @@ export function Badge({
   className = '',
 }: {
   children: ReactNode;
-  tone?: 'primary' | 'green' | 'red' | 'purple' | 'neutral';
+  tone?: 'primary' | 'green' | 'red' | 'purple' | 'neutral' | 'amber';
   className?: string;
 }) {
   const tones: Record<string, string> = {
@@ -90,6 +90,7 @@ export function Badge({
     red: 'bg-red-dim text-red',
     purple: 'bg-purple-dim text-purple',
     neutral: 'bg-white/5 text-ink-dim',
+    amber: 'bg-amber-dim text-amber',
   };
   return (
     <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${tones[tone]} ${className}`}>
@@ -137,6 +138,67 @@ export function CopyButton({ value, label = 'Copy' }: { value: string; label?: s
     >
       {copied ? 'Copied' : label}
     </button>
+  );
+}
+
+// Four-step vesting visual: TGE -> cliff -> vesting -> full unlock.
+// `markerPct` (0-100) optionally places a "you are here" dot along the
+// cliff+vesting span, for showing live progress after a claim.
+export function VestingTimeline({
+  tgePct,
+  cliffMonths,
+  vestMonths,
+  markerPct,
+  grayed = false,
+  className = '',
+}: {
+  tgePct: number;
+  cliffMonths: number;
+  vestMonths: number;
+  markerPct?: number;
+  grayed?: boolean;
+  className?: string;
+}) {
+  const totalMonths = Math.max(cliffMonths + vestMonths, 1);
+  const cliffWidthPct = (cliffMonths / totalMonths) * 100;
+  const vestWidthPct = (vestMonths / totalMonths) * 100;
+  const dotColor = grayed ? 'bg-ink-faint' : 'bg-primary';
+  const lineColor = grayed ? 'bg-white/5' : 'bg-primary/20';
+
+  return (
+    <div className={className}>
+      <div className="relative h-2 w-full overflow-hidden rounded-full bg-white/5">
+        <div className={`absolute inset-y-0 left-0 ${lineColor}`} style={{ width: `${cliffWidthPct}%` }} />
+        <div
+          className={`absolute inset-y-0 ${grayed ? 'bg-white/10' : 'bg-primary/40'}`}
+          style={{ left: `${cliffWidthPct}%`, width: `${vestWidthPct}%` }}
+        />
+        {typeof markerPct === 'number' && (
+          <div
+            className={`absolute top-1/2 h-3 w-3 -translate-y-1/2 -translate-x-1/2 rounded-full border-2 border-bg ${dotColor}`}
+            style={{ left: `${Math.min(100, Math.max(0, markerPct))}%` }}
+          />
+        )}
+      </div>
+      <div className="mt-2 grid grid-cols-4 gap-1 text-center text-[11px] leading-tight text-ink-faint">
+        <div>
+          <span className={`block font-semibold ${grayed ? 'text-ink-faint' : 'text-primary'}`}>TGE {tgePct}%</span>
+          Instant
+        </div>
+        <div>
+          <span className="block font-semibold text-ink-dim">{cliffMonths}mo</span>
+          Cliff
+        </div>
+        <div>
+          <span className="block font-semibold text-ink-dim">{vestMonths}mo</span>
+          Vesting
+        </div>
+        <div>
+          <span className={`block font-semibold ${grayed ? 'text-ink-faint' : 'text-green'}`}>Full Unlock</span>
+          {totalMonths}mo total
+        </div>
+      </div>
+    </div>
   );
 }
 

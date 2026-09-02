@@ -37,11 +37,29 @@ const metadata = {
 
 if (!projectId && typeof window !== 'undefined') {
   console.warn(
-    '[FlowDex] NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID is not set — Connect Wallet will not work until it is configured.'
+    '[FlowDex] NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID is not set — Connect Wallet will not work until it is configured. ' +
+      'A missing/invalid project id is also why the wallet explorer list and QR code fail: get a real id from https://cloud.walletconnect.com.'
   );
 }
 
-const ethersConfig = defaultConfig({ metadata, defaultChainId: 1 });
+// Featured wallets shown first, both in the default connect view and at the
+// top of "All Wallets" — ids are from the WalletConnect Explorer.
+const FEATURED_WALLET_IDS = [
+  'c57ca95b47569778a828d19178114f4db188b89b763c899ba0be274e97267d96', // MetaMask
+  '4622a2b2d6af1c9844944291e5e7351a6aa24cd7b23099efac1b2fd875da31a0', // Trust Wallet
+  '8a0ee50d1f22f6651afcae7eb4253e52a3310b90af5daef78a8c4929a9bb99d4', // Binance Web3 Wallet
+  'fd20dc426fb37566d803205b19bbc1d4096b248ac04548e18e93c30de230b7ec', // Coinbase Wallet
+];
+
+const ethersConfig = defaultConfig({
+  metadata,
+  defaultChainId: 1,
+  // Wallet-only login: this SDK's defaultConfig defaults `email: true` and
+  // `socials` to every provider (google/x/discord/farcaster/github/apple/
+  // facebook) unless overridden here — that default is what was putting
+  // social logins in the modal.
+  auth: { email: false, socials: [] },
+});
 
 // Initialized once at module load (the standard Reown/Web3Modal SSR pattern):
 // useWeb3Modal()/useWeb3ModalAccount() run during the server render pass too,
@@ -56,6 +74,14 @@ createWeb3Modal({
   // the buyer's chosen payment method doesn't have to match their wallet's
   // chain (e.g. paying with USDT TRC-20 or BTC from an EVM wallet).
   allowUnsupportedChain: true,
+  // Show the "All Wallets" button and don't restrict/exclude the explorer
+  // list — the full 550+ WalletConnect wallet list depends on a valid
+  // projectId (see the warning above), not on these flags alone.
+  allWallets: 'SHOW',
+  featuredWalletIds: FEATURED_WALLET_IDS,
+  includeWalletIds: undefined,
+  excludeWalletIds: undefined,
+  enableAnalytics: true,
   themeMode: 'dark',
   themeVariables: {
     '--w3m-color-mix': '#627EEA',

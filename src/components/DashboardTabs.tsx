@@ -36,12 +36,12 @@ export default function DashboardTabs() {
         </Card>
       ) : (
         <div>
-          <div className="mb-6 flex w-fit gap-1 rounded-lg border border-border bg-card p-1">
+          <div className="mb-6 flex gap-1 overflow-x-auto rounded-lg border border-border bg-card p-1 sm:w-fit">
             {TABS.map((t) => (
               <button
                 key={t.key}
                 onClick={() => setActive(t.key)}
-                className={`rounded-md px-4 py-2 text-sm font-semibold transition-colors ${
+                className={`min-h-11 flex-1 shrink-0 whitespace-nowrap rounded-md px-4 py-2 text-sm font-semibold transition-colors sm:flex-none ${
                   active === t.key ? 'bg-primary text-[#03131a]' : 'text-ink-dim hover:text-ink'
                 }`}
               >
@@ -50,9 +50,11 @@ export default function DashboardTabs() {
             ))}
           </div>
 
-          {active === 'portfolio' && <PortfolioTab />}
-          {active === 'referral' && <ReferralTab />}
-          {active === 'claims' && <ClaimsTab />}
+          <div className="w-full min-w-0">
+            {active === 'portfolio' && <PortfolioTab />}
+            {active === 'referral' && <ReferralTab />}
+            {active === 'claims' && <ClaimsTab />}
+          </div>
         </div>
       )}
     </Section>

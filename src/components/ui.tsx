@@ -61,7 +61,7 @@ export function Button({
   ...rest
 }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: ButtonVariant }) {
   const base =
-    'inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed';
+    'inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed';
   const variants: Record<ButtonVariant, string> = {
     primary: 'bg-primary text-[#03131a] hover:bg-primary/90',
     secondary: 'bg-card-hover text-ink border border-border hover:border-primary/50',
@@ -133,7 +133,7 @@ export function CopyButton({ value, label = 'Copy' }: { value: string; label?: s
     <button
       type="button"
       onClick={onCopy}
-      className="inline-flex shrink-0 items-center gap-1 rounded-md border border-border px-2 py-1 text-xs font-semibold text-ink-dim hover:text-primary hover:border-primary/50 transition-colors"
+      className="inline-flex min-h-11 shrink-0 items-center gap-1 rounded-md border border-border px-3 py-1 text-xs font-semibold text-ink-dim hover:text-primary hover:border-primary/50 transition-colors"
     >
       {copied ? 'Copied' : label}
     </button>

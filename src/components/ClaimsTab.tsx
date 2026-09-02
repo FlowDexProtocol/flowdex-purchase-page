@@ -85,7 +85,7 @@ export default function ClaimsTab() {
             {claimingId === c.id ? 'Claiming…' : c.status === 'claimed' ? 'Claimed' : 'Claim'}
           </Button>
 
-          {c.claimed_at && <p className="w-full text-[11px] text-ink-faint">Claimed {formatDate(c.claimed_at)}</p>}
+          {c.claimed_at && <p className="w-full text-xs text-ink-faint">Claimed {formatDate(c.claimed_at)}</p>}
         </Card>
       ))}
     </div>

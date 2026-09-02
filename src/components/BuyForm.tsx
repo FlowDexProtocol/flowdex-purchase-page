@@ -45,7 +45,6 @@ export default function BuyForm() {
   const [checkingBalance, setCheckingBalance] = useState(false);
   const [balanceWarning, setBalanceWarning] = useState<{ balance: number; required: number; symbol: string } | null>(null);
 
-  const [showReferralInput, setShowReferralInput] = useState(false);
   const [referralInput, setReferralInput] = useState('');
   const referralSeededRef = useRef(false);
   const referralAppliedRef = useRef<string | null>(null);
@@ -108,7 +107,6 @@ export default function BuyForm() {
     if (referredByCode && !referralSeededRef.current) {
       referralSeededRef.current = true;
       setReferralInput(referredByCode);
-      setShowReferralInput(true);
     }
   }, [referredByCode]);
 
@@ -213,7 +211,7 @@ export default function BuyForm() {
     <Section id="buy">
       <SectionHeading eyebrow="Presale" title="Buy $FDP" description="Lock in your price for 15 minutes and receive a deposit address." />
 
-      <div className="grid gap-6 lg:grid-cols-5">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
         <Card className="lg:col-span-3">
           <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-ink-dim">Pay with</label>
           <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
@@ -221,7 +219,7 @@ export default function BuyForm() {
               <button
                 key={m.key}
                 onClick={() => setMethodKey(m.key)}
-                className={`rounded-lg border px-3 py-2.5 text-xs sm:text-sm font-semibold transition-colors ${
+                className={`min-h-11 rounded-lg border px-2 py-2.5 text-xs sm:px-3 sm:text-sm font-semibold transition-colors ${
                   methodKey === m.key
                     ? 'border-primary bg-primary-dim text-primary'
                     : 'border-border text-ink-dim hover:text-ink hover:border-primary/40'
@@ -247,7 +245,7 @@ export default function BuyForm() {
             />
           </div>
           {validationError && <p className="mt-2 text-xs text-red">{validationError}</p>}
-          <p className="mt-2 text-[11px] text-ink-faint">{GAS_FEE_NOTES[methodKey]}</p>
+          <p className="mt-2 text-xs text-ink-faint">{GAS_FEE_NOTES[methodKey]}</p>
 
           <div className="mt-4 grid grid-cols-2 gap-3">
             <div className="rounded-lg border border-border bg-bg-soft p-3">
@@ -262,58 +260,46 @@ export default function BuyForm() {
                 </Mono>
               )}
               {price !== null && !priceLoading && (
-                <Mono className="mt-0.5 block text-[11px] text-ink-faint">1 {method.crypto} = {formatUsd(price)}</Mono>
+                <Mono className="mt-0.5 block text-xs text-ink-faint">1 {method.crypto} = {formatUsd(price)}</Mono>
               )}
             </div>
             <div className="rounded-lg border border-border bg-bg-soft p-3">
               <p className="text-xs text-ink-dim">Estimated $FDP</p>
               <Mono className="mt-1 block text-base font-bold text-green">{formatTokens(fdpEstimate, 2)}</Mono>
-              {tierPrice > 0 && <Mono className="mt-0.5 block text-[11px] text-ink-faint">at {formatPrice(tierPrice)}/token</Mono>}
+              {tierPrice > 0 && <Mono className="mt-0.5 block text-xs text-ink-faint">at {formatPrice(tierPrice)}/token</Mono>}
             </div>
           </div>
 
           <div className="mt-4">
-            {!showReferralInput ? (
-              <button
-                type="button"
-                onClick={() => setShowReferralInput(true)}
-                className="text-xs font-medium text-ink-faint hover:text-primary"
-              >
-                Have a referral code?
-              </button>
-            ) : (
-              <div>
-                <label htmlFor="referral" className="mb-1.5 block text-xs font-medium text-ink-faint">
-                  Have a referral code?
-                </label>
-                <input
-                  id="referral"
-                  value={referralInput}
-                  onChange={(e) => setReferralInput(e.target.value.toUpperCase())}
-                  placeholder="Enter code (e.g. FDX-XXXX-XXXX)"
-                  className="w-full rounded-lg border border-border bg-bg-soft px-3 py-2.5 font-mono text-sm text-ink outline-none focus:border-primary/60"
-                />
-                {referralValidation.state === 'valid' && (
-                  <p className="mt-1.5 flex items-center gap-1.5 text-xs text-green">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="shrink-0" aria-hidden="true">
-                      <path
-                        d="m5 13 4 4L19 7"
-                        stroke="currentColor"
-                        strokeWidth="2.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                    30% bonus will be applied to your purchase.
-                  </p>
-                )}
-                {referralValidation.state === 'invalid_format' && (
-                  <p className="mt-1.5 text-xs text-red">Invalid code format</p>
-                )}
-                {referralValidation.state === 'self' && (
-                  <p className="mt-1.5 text-xs text-red">You cannot use your own referral code</p>
-                )}
-              </div>
+            <label htmlFor="referral" className="mb-1.5 block text-xs font-semibold uppercase tracking-widest text-ink-dim">
+              Referral Code (optional)
+            </label>
+            <input
+              id="referral"
+              value={referralInput}
+              onChange={(e) => setReferralInput(e.target.value.toUpperCase())}
+              placeholder="FDX-XXXX-XXXX"
+              className="w-full rounded-lg border border-border bg-bg-soft px-3 py-2.5 font-mono text-sm text-ink outline-none focus:border-primary/60"
+            />
+            {referralValidation.state === 'valid' && (
+              <p className="mt-1.5 flex items-center gap-1.5 text-xs text-green">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="shrink-0" aria-hidden="true">
+                  <path
+                    d="m5 13 4 4L19 7"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                30% bonus will be applied to your purchase.
+              </p>
+            )}
+            {referralValidation.state === 'invalid_format' && (
+              <p className="mt-1.5 text-xs text-red">Invalid code format</p>
+            )}
+            {referralValidation.state === 'self' && (
+              <p className="mt-1.5 text-xs text-red">You cannot use your own referral code</p>
             )}
           </div>
 
@@ -441,7 +427,7 @@ export default function BuyForm() {
                 </div>
               </div>
 
-              <p className="text-[11px] text-ink-faint">
+              <p className="text-xs text-ink-faint">
                 Send only {method.crypto} on {method.network}. Your purchase confirms automatically once the payment is detected on-chain.
               </p>
             </div>

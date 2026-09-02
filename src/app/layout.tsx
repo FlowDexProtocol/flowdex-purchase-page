@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { DM_Sans, JetBrains_Mono } from 'next/font/google';
 import Providers from '@/components/Providers';
 import CookieConsent from '@/components/CookieConsent';
+import MobileStickyBar from '@/components/MobileStickyBar';
 import './globals.css';
 
 const SITE_URL = 'https://purchase.flowdexprotocol.com';
@@ -51,6 +52,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
     <html lang="en" className={`${dmSans.variable} ${jetbrainsMono.variable} h-full`}>
       <body className="min-h-full flex flex-col bg-bg text-ink antialiased">
         <Providers>{children}</Providers>
+        <MobileStickyBar />
         <CookieConsent />
       </body>
     </html>

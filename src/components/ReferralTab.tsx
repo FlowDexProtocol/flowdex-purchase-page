@@ -95,7 +95,7 @@ export default function ReferralTab() {
               href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareMessage)}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card-hover px-3 py-2 text-xs font-semibold text-ink-dim transition-colors hover:text-ink hover:border-primary/50"
+              className="inline-flex min-h-11 items-center gap-1.5 rounded-lg border border-border bg-card-hover px-3 py-2 text-xs font-semibold text-ink-dim transition-colors hover:text-ink hover:border-primary/50"
             >
               X / Twitter
             </a>
@@ -105,7 +105,7 @@ export default function ReferralTab() {
               )}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card-hover px-3 py-2 text-xs font-semibold text-ink-dim transition-colors hover:text-ink hover:border-primary/50"
+              className="inline-flex min-h-11 items-center gap-1.5 rounded-lg border border-border bg-card-hover px-3 py-2 text-xs font-semibold text-ink-dim transition-colors hover:text-ink hover:border-primary/50"
             >
               Telegram
             </a>
@@ -113,14 +113,14 @@ export default function ReferralTab() {
               href={`https://wa.me/?text=${encodeURIComponent(shareMessage)}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card-hover px-3 py-2 text-xs font-semibold text-ink-dim transition-colors hover:text-ink hover:border-primary/50"
+              className="inline-flex min-h-11 items-center gap-1.5 rounded-lg border border-border bg-card-hover px-3 py-2 text-xs font-semibold text-ink-dim transition-colors hover:text-ink hover:border-primary/50"
             >
               WhatsApp
             </a>
             <button
               type="button"
               onClick={handleCopyLink}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card-hover px-3 py-2 text-xs font-semibold text-ink-dim transition-colors hover:text-ink hover:border-primary/50"
+              className="inline-flex min-h-11 items-center gap-1.5 rounded-lg border border-border bg-card-hover px-3 py-2 text-xs font-semibold text-ink-dim transition-colors hover:text-ink hover:border-primary/50"
             >
               {copied ? 'Copied!' : 'Copy Link'}
             </button>

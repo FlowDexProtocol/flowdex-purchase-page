@@ -36,10 +36,10 @@ export default function Footer() {
 
           <div>
             <p className="text-xs font-semibold uppercase tracking-widest text-ink-dim">Navigate</p>
-            <ul className="mt-3 space-y-2">
+            <ul className="mt-1">
               {LINKS.map((l) => (
                 <li key={l.href}>
-                  <a href={l.href} className="text-sm text-ink-dim hover:text-ink transition-colors">
+                  <a href={l.href} className="flex min-h-11 items-center text-sm text-ink-dim hover:text-ink transition-colors">
                     {l.label}
                   </a>
                 </li>
@@ -49,10 +49,15 @@ export default function Footer() {
 
           <div>
             <p className="text-xs font-semibold uppercase tracking-widest text-ink-dim">Community</p>
-            <ul className="mt-3 space-y-2">
+            <ul className="mt-1">
               {SOCIAL.map((l) => (
                 <li key={l.href}>
-                  <a href={l.href} target="_blank" rel="noopener noreferrer" className="text-sm text-ink-dim hover:text-ink transition-colors">
+                  <a
+                    href={l.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex min-h-11 items-center text-sm text-ink-dim hover:text-ink transition-colors"
+                  >
                     {l.label}
                   </a>
                 </li>
@@ -69,19 +74,22 @@ export default function Footer() {
             jurisdiction where such an offer would be unlawful.
           </p>
           <p className="mt-4 text-xs text-ink-faint">© {new Date().getFullYear()} FlowDex Protocol. All rights reserved.</p>
-          <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
+          <div className="mt-1 flex flex-wrap gap-x-4">
             {LEGAL_LINKS.map((l) => (
               <a
                 key={l.href}
                 href={l.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs text-ink-faint hover:text-ink transition-colors"
+                className="flex min-h-11 items-center text-xs text-ink-faint hover:text-ink transition-colors"
               >
                 {l.label}
               </a>
             ))}
-            <a href="mailto:support@flowdexprotocol.com" className="text-xs text-ink-faint hover:text-ink transition-colors">
+            <a
+              href="mailto:support@flowdexprotocol.com"
+              className="flex min-h-11 items-center text-xs text-ink-faint hover:text-ink transition-colors"
+            >
               Support: support@flowdexprotocol.com
             </a>
           </div>

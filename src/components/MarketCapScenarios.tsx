@@ -43,17 +43,17 @@ export default function MarketCapScenarios() {
       ) : error && !data ? (
         <EmptyState>Scenario data unavailable right now.</EmptyState>
       ) : data ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+        <div className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-3 sm:gap-4 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-5">
           {data.scenarios.map((s) => (
-            <Card key={s.label} className="text-center">
+            <Card key={s.label} className="w-[70%] shrink-0 snap-center text-center sm:w-auto sm:shrink">
               <p className="text-xs font-semibold uppercase tracking-widest text-ink-dim">{s.label}</p>
               <Mono className="mt-2 block text-lg font-bold text-primary">{s.multiplier}x</Mono>
               <Mono className="mt-1 block text-sm text-ink-dim">${s.price.toFixed(2)}</Mono>
               <div className="mt-4 border-t border-border pt-3">
-                <p className="text-[11px] uppercase tracking-widest text-ink-faint">Your $FDP worth</p>
+                <p className="text-xs uppercase tracking-widest text-ink-faint">Your $FDP worth</p>
                 <Mono className="mt-1 block text-base font-bold text-green">{formatUsd(tokenAmount * s.price)}</Mono>
               </div>
-              <Mono className="mt-2 block text-[11px] text-ink-faint">{formatCompactUsd(s.mcap)} mcap</Mono>
+              <Mono className="mt-2 block text-xs text-ink-faint">{formatCompactUsd(s.mcap)} mcap</Mono>
             </Card>
           ))}
         </div>

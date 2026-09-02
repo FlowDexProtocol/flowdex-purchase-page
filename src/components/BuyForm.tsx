@@ -17,6 +17,16 @@ const MAX_USD = 10_000_000;
 const INTENT_WINDOW_MS = 15 * 60 * 1000;
 const REFERRAL_CODE_RE = /^FDX-[A-Z0-9]{4}-[A-Z0-9]{4}$/;
 
+const GAS_FEE_NOTES: Record<PaymentMethodKey, string> = {
+  ETH: 'Note: Network gas fees of approximately $2-15 apply on top of this amount.',
+  BNB: 'Note: Network gas fees of approximately $2-15 apply on top of this amount.',
+  'USDT-ERC20': 'Note: A small network fee applies for token transfers.',
+  USDC: 'Note: A small network fee applies for token transfers.',
+  'USDT-TRC20': 'Note: Tron network fees are typically under $1.',
+  SOL: 'Note: Solana network fees are typically a fraction of a cent.',
+  BTC: 'Note: Bitcoin network fees vary with network congestion, typically $1-5.',
+};
+
 export default function BuyForm() {
   const { address, isConnected, openConnectModal, referralCode, referredByCode } = useWallet();
   const { walletProvider } = useWeb3ModalProvider();
@@ -34,6 +44,8 @@ export default function BuyForm() {
   const [remainingMs, setRemainingMs] = useState(0);
   const [checkingBalance, setCheckingBalance] = useState(false);
   const [balanceWarning, setBalanceWarning] = useState<{ balance: number; required: number; symbol: string } | null>(null);
+
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   const [showReferralInput, setShowReferralInput] = useState(false);
   const [referralInput, setReferralInput] = useState('');
@@ -237,6 +249,7 @@ export default function BuyForm() {
             />
           </div>
           {validationError && <p className="mt-2 text-xs text-red">{validationError}</p>}
+          <p className="mt-2 text-[11px] text-ink-faint">{GAS_FEE_NOTES[methodKey]}</p>
 
           <div className="mt-4 grid grid-cols-2 gap-3">
             <div className="rounded-lg border border-border bg-bg-soft p-3">
@@ -306,10 +319,30 @@ export default function BuyForm() {
             )}
           </div>
 
+          <label className="mt-5 flex items-start gap-2.5 text-xs text-ink-dim">
+            <input
+              type="checkbox"
+              checked={termsAccepted}
+              onChange={(e) => setTermsAccepted(e.target.checked)}
+              className="mt-0.5 h-4 w-4 shrink-0 rounded border-border bg-bg-soft accent-primary"
+            />
+            <span>
+              I have read and agree to the{' '}
+              <a
+                href="https://flowdexprotocol.com/terms"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-primary hover:underline"
+              >
+                Terms of Service
+              </a>
+            </span>
+          </label>
+
           <Button
-            className="mt-5 w-full"
+            className="mt-3 w-full"
             onClick={handleBuy}
-            disabled={submitting || checkingBalance || !!balanceWarning || !!validationError || usdNumber <= 0}
+            disabled={submitting || checkingBalance || !!balanceWarning || !!validationError || usdNumber <= 0 || !termsAccepted}
           >
             {checkingBalance ? (
               <>
@@ -436,6 +469,13 @@ export default function BuyForm() {
             </div>
           )}
         </Card>
+
+        <p className="text-center text-xs text-ink-faint lg:col-span-5">
+          Need help? Contact{' '}
+          <a href="mailto:support@flowdexprotocol.com" className="font-medium text-primary hover:underline">
+            support@flowdexprotocol.com
+          </a>
+        </p>
       </div>
     </Section>
   );

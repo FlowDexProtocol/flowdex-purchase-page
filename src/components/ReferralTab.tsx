@@ -50,6 +50,7 @@ export default function ReferralTab() {
 
   const code = stats?.referral_code || liveReferralCode;
   const shareUrl = typeof window !== 'undefined' && code ? `${window.location.origin}${window.location.pathname}?ref=${code}` : '';
+  const shareMessage = `Buy $FDP at the lowest presale price. Use my referral link for a 30% bonus: ${shareUrl}`;
 
   async function handleShare() {
     if (!shareUrl) return;
@@ -61,6 +62,13 @@ export default function ReferralTab() {
         // user cancelled or share unsupported — fall through to copy
       }
     }
+    await navigator.clipboard.writeText(shareUrl).catch(() => {});
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  }
+
+  async function handleCopyLink() {
+    if (!shareUrl) return;
     await navigator.clipboard.writeText(shareUrl).catch(() => {});
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
@@ -80,6 +88,44 @@ export default function ReferralTab() {
         <p className="mt-3 text-xs text-ink-dim">
           When someone buys using your code, you earn <span className="font-semibold text-green">15% of their purchase</span> as bonus.
         </p>
+
+        {shareUrl && (
+          <div className="mt-4 flex flex-wrap gap-2">
+            <a
+              href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareMessage)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card-hover px-3 py-2 text-xs font-semibold text-ink-dim transition-colors hover:text-ink hover:border-primary/50"
+            >
+              X / Twitter
+            </a>
+            <a
+              href={`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(
+                'Buy $FDP at the lowest presale price. Use my referral link for a 30% bonus:'
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card-hover px-3 py-2 text-xs font-semibold text-ink-dim transition-colors hover:text-ink hover:border-primary/50"
+            >
+              Telegram
+            </a>
+            <a
+              href={`https://wa.me/?text=${encodeURIComponent(shareMessage)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card-hover px-3 py-2 text-xs font-semibold text-ink-dim transition-colors hover:text-ink hover:border-primary/50"
+            >
+              WhatsApp
+            </a>
+            <button
+              type="button"
+              onClick={handleCopyLink}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card-hover px-3 py-2 text-xs font-semibold text-ink-dim transition-colors hover:text-ink hover:border-primary/50"
+            >
+              {copied ? 'Copied!' : 'Copy Link'}
+            </button>
+          </div>
+        )}
       </Card>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">

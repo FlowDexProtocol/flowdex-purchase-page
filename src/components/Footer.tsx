@@ -50,7 +50,7 @@ export default function Footer() {
             <ul className="mt-3 space-y-2">
               {SOCIAL.map((l) => (
                 <li key={l.href}>
-                  <a href={l.href} target="_blank" rel="noreferrer" className="text-sm text-ink-dim hover:text-ink transition-colors">
+                  <a href={l.href} target="_blank" rel="noopener noreferrer" className="text-sm text-ink-dim hover:text-ink transition-colors">
                     {l.label}
                   </a>
                 </li>
@@ -67,6 +67,9 @@ export default function Footer() {
             jurisdiction where such an offer would be unlawful.
           </p>
           <p className="mt-4 text-xs text-ink-faint">© {new Date().getFullYear()} FlowDex Protocol. All rights reserved.</p>
+          <a href="mailto:support@flowdexprotocol.com" className="mt-2 block text-xs text-ink-faint hover:text-ink transition-colors">
+            Support: support@flowdexprotocol.com
+          </a>
         </div>
       </Container>
     </footer>

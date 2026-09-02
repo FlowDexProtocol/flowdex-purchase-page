@@ -72,8 +72,6 @@ function AccountMenu() {
 }
 
 export default function Header() {
-  const [mobileOpen, setMobileOpen] = useState(false);
-
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-bg/85 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-4 sm:px-6 lg:px-8">
@@ -95,47 +93,9 @@ export default function Header() {
         </nav>
 
         <div className="flex shrink-0 items-center gap-2">
-          <div className="hidden sm:block">
-            <AccountMenu />
-          </div>
-          <a
-            href="#buy"
-            className="flex min-h-11 shrink-0 items-center rounded-lg bg-primary px-3 text-xs font-bold text-[#03131a] hover:bg-primary/90 transition-colors sm:hidden"
-          >
-            Buy $FDP
-          </a>
-          <button
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-border text-ink-dim lg:hidden"
-            onClick={() => setMobileOpen((v) => !v)}
-            aria-label="Toggle menu"
-            aria-expanded={mobileOpen}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-          </button>
+          <AccountMenu />
         </div>
       </div>
-
-      {mobileOpen && (
-        <div className="fixed inset-0 top-16 z-50 overflow-y-auto bg-bg lg:hidden">
-          <div className="flex flex-col gap-1 px-4 py-4">
-            {NAV_LINKS.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                onClick={() => setMobileOpen(false)}
-                className="flex min-h-11 items-center rounded-lg px-2 text-base font-medium text-ink-dim hover:bg-white/5 hover:text-ink"
-              >
-                {link.label}
-              </a>
-            ))}
-            <div className="pt-3 sm:hidden">
-              <AccountMenu />
-            </div>
-          </div>
-        </div>
-      )}
     </header>
   );
 }

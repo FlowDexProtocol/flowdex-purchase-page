@@ -78,9 +78,9 @@ export default function ReferralTab() {
     <div className="space-y-6">
       <Card>
         <p className="text-xs uppercase tracking-widest text-ink-dim">Your Referral Code</p>
-        <div className="mt-2 flex flex-wrap items-center gap-3">
-          <Mono className="text-2xl font-bold text-primary">{code || '—'}</Mono>
-          <Button variant="secondary" onClick={handleShare} disabled={!code}>
+        <div className="mt-2 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
+          <Mono className="block w-full text-2xl font-bold text-primary sm:w-auto">{code || '—'}</Mono>
+          <Button variant="secondary" className="w-full sm:w-auto" onClick={handleShare} disabled={!code}>
             {copied ? 'Copied!' : 'Share'}
           </Button>
         </div>
@@ -90,12 +90,12 @@ export default function ReferralTab() {
         </p>
 
         {shareUrl && (
-          <div className="mt-4 flex flex-wrap gap-2">
+          <div className="mt-4 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
             <a
               href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareMessage)}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex min-h-11 items-center gap-1.5 rounded-lg border border-border bg-card-hover px-3 py-2 text-xs font-semibold text-ink-dim transition-colors hover:text-ink hover:border-primary/50"
+              className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-lg border border-border bg-card-hover px-3 py-2 text-xs font-semibold text-ink-dim transition-colors hover:text-ink hover:border-primary/50 sm:justify-start"
             >
               X / Twitter
             </a>
@@ -105,7 +105,7 @@ export default function ReferralTab() {
               )}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex min-h-11 items-center gap-1.5 rounded-lg border border-border bg-card-hover px-3 py-2 text-xs font-semibold text-ink-dim transition-colors hover:text-ink hover:border-primary/50"
+              className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-lg border border-border bg-card-hover px-3 py-2 text-xs font-semibold text-ink-dim transition-colors hover:text-ink hover:border-primary/50 sm:justify-start"
             >
               Telegram
             </a>
@@ -113,14 +113,14 @@ export default function ReferralTab() {
               href={`https://wa.me/?text=${encodeURIComponent(shareMessage)}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex min-h-11 items-center gap-1.5 rounded-lg border border-border bg-card-hover px-3 py-2 text-xs font-semibold text-ink-dim transition-colors hover:text-ink hover:border-primary/50"
+              className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-lg border border-border bg-card-hover px-3 py-2 text-xs font-semibold text-ink-dim transition-colors hover:text-ink hover:border-primary/50 sm:justify-start"
             >
               WhatsApp
             </a>
             <button
               type="button"
               onClick={handleCopyLink}
-              className="inline-flex min-h-11 items-center gap-1.5 rounded-lg border border-border bg-card-hover px-3 py-2 text-xs font-semibold text-ink-dim transition-colors hover:text-ink hover:border-primary/50"
+              className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-lg border border-border bg-card-hover px-3 py-2 text-xs font-semibold text-ink-dim transition-colors hover:text-ink hover:border-primary/50 sm:justify-start"
             >
               {copied ? 'Copied!' : 'Copy Link'}
             </button>

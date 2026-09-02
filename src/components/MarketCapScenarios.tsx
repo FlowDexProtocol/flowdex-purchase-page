@@ -45,7 +45,7 @@ export default function MarketCapScenarios() {
       ) : data ? (
         <div className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-3 sm:gap-4 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-5">
           {data.scenarios.map((s) => (
-            <Card key={s.label} className="w-[70%] shrink-0 snap-center text-center sm:w-auto sm:shrink">
+            <Card key={s.label} className="w-[85%] min-w-[280px] shrink-0 snap-center text-center sm:w-auto sm:min-w-0 sm:shrink">
               <p className="text-xs font-semibold uppercase tracking-widest text-ink-dim">{s.label}</p>
               <Mono className="mt-2 block text-lg font-bold text-primary">{s.multiplier}x</Mono>
               <Mono className="mt-1 block text-sm text-ink-dim">${s.price.toFixed(2)}</Mono>

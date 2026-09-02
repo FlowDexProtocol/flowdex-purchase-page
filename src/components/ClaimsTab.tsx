@@ -62,7 +62,7 @@ export default function ClaimsTab() {
     <div className="space-y-4">
       {claimError && <ErrorNote>{claimError}</ErrorNote>}
       {claims.map((c) => (
-        <Card key={c.id} className="flex flex-wrap items-center justify-between gap-4">
+        <Card key={c.id} className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
           <div>
             <div className="flex items-center gap-2">
               <p className="font-semibold text-ink">{c.tier_name || `Tier ${c.tier_id}`}</p>
@@ -73,12 +73,13 @@ export default function ClaimsTab() {
             </p>
           </div>
 
-          <div className="text-right">
+          <div className="sm:text-right">
             <p className="text-xs text-ink-dim">Claimable now</p>
             <Mono className="text-lg font-bold text-primary">{formatTokens(c.total_claimable)}</Mono>
           </div>
 
           <Button
+            className="w-full sm:w-auto"
             onClick={() => handleClaim(c)}
             disabled={c.status !== 'eligible' || claimingId === c.id || toNum(c.total_claimable) <= 0}
           >

@@ -304,7 +304,7 @@ export default function BuyForm() {
           </div>
 
           <Button
-            className="mt-5 w-full"
+            className="mt-5 min-h-12 w-full"
             onClick={handleBuy}
             disabled={submitting || checkingBalance || !!balanceWarning || !!validationError || usdNumber <= 0}
           >

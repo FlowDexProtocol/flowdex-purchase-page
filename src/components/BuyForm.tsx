@@ -45,8 +45,6 @@ export default function BuyForm() {
   const [checkingBalance, setCheckingBalance] = useState(false);
   const [balanceWarning, setBalanceWarning] = useState<{ balance: number; required: number; symbol: string } | null>(null);
 
-  const [termsAccepted, setTermsAccepted] = useState(false);
-
   const [showReferralInput, setShowReferralInput] = useState(false);
   const [referralInput, setReferralInput] = useState('');
   const referralSeededRef = useRef(false);
@@ -319,30 +317,10 @@ export default function BuyForm() {
             )}
           </div>
 
-          <label className="mt-5 flex items-start gap-2.5 text-xs text-ink-dim">
-            <input
-              type="checkbox"
-              checked={termsAccepted}
-              onChange={(e) => setTermsAccepted(e.target.checked)}
-              className="mt-0.5 h-4 w-4 shrink-0 rounded border-border bg-bg-soft accent-primary"
-            />
-            <span>
-              I have read and agree to the{' '}
-              <a
-                href="https://flowdexprotocol.com/terms"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-medium text-primary hover:underline"
-              >
-                Terms of Service
-              </a>
-            </span>
-          </label>
-
           <Button
-            className="mt-3 w-full"
+            className="mt-5 w-full"
             onClick={handleBuy}
-            disabled={submitting || checkingBalance || !!balanceWarning || !!validationError || usdNumber <= 0 || !termsAccepted}
+            disabled={submitting || checkingBalance || !!balanceWarning || !!validationError || usdNumber <= 0}
           >
             {checkingBalance ? (
               <>

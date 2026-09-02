@@ -8,6 +8,8 @@ const LINKS = [
   { label: 'Staking', href: '#staking' },
 ];
 
+const LEGAL_LINKS = [{ label: 'Terms of Service', href: 'https://flowdexprotocol.com/terms' }];
+
 const SOCIAL = [
   { label: 'X / Twitter', href: 'https://x.com/flowdexprotocol' },
   { label: 'Telegram', href: 'https://t.me/flowdexprotocol' },
@@ -67,9 +69,22 @@ export default function Footer() {
             jurisdiction where such an offer would be unlawful.
           </p>
           <p className="mt-4 text-xs text-ink-faint">© {new Date().getFullYear()} FlowDex Protocol. All rights reserved.</p>
-          <a href="mailto:support@flowdexprotocol.com" className="mt-2 block text-xs text-ink-faint hover:text-ink transition-colors">
-            Support: support@flowdexprotocol.com
-          </a>
+          <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
+            {LEGAL_LINKS.map((l) => (
+              <a
+                key={l.href}
+                href={l.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-ink-faint hover:text-ink transition-colors"
+              >
+                {l.label}
+              </a>
+            ))}
+            <a href="mailto:support@flowdexprotocol.com" className="text-xs text-ink-faint hover:text-ink transition-colors">
+              Support: support@flowdexprotocol.com
+            </a>
+          </div>
         </div>
       </Container>
     </footer>

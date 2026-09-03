@@ -9,6 +9,7 @@ import { ApiError, applyReferral, getPrice, postPurchaseIntent } from '@/lib/api
 import { checkEvmBalance } from '@/lib/balance';
 import { PAYMENT_METHODS, type PaymentMethodKey } from '@/lib/types';
 import { formatDuration, formatNumber, formatPrice, formatTokens, formatUsd, toNum } from '@/lib/format';
+import { cms, type CmsPageData } from '@/lib/cms';
 import { Badge, Button, Card, CopyButton, ErrorNote, Mono, Section, SectionHeading, Spinner, VestingTimeline } from './ui';
 import type { PurchaseIntentResponse, TierCurrent } from '@/lib/types';
 
@@ -40,7 +41,19 @@ const GAS_FEE_NOTES: Record<PaymentMethodKey, string> = {
   BTC: 'Note: Bitcoin network fees vary with network congestion, typically $1-5.',
 };
 
-export default function BuyForm() {
+// Only ETH/BNB (native) and the ERC-20 token methods have a CMS-managed
+// generic warning (buy.form.gas_warning_native / gas_warning_token) — the
+// chain-specific Tron/Solana/Bitcoin fee notes stay hardcoded per method.
+const NATIVE_GAS_METHODS: PaymentMethodKey[] = ['ETH', 'BNB'];
+const TOKEN_GAS_METHODS: PaymentMethodKey[] = ['USDT-ERC20', 'USDC'];
+
+function resolveGasNote(cmsBuy: CmsPageData, key: PaymentMethodKey): string {
+  if (NATIVE_GAS_METHODS.includes(key)) return cms(cmsBuy, 'form', 'gas_warning_native', GAS_FEE_NOTES[key]);
+  if (TOKEN_GAS_METHODS.includes(key)) return cms(cmsBuy, 'form', 'gas_warning_token', GAS_FEE_NOTES[key]);
+  return GAS_FEE_NOTES[key];
+}
+
+export default function BuyForm({ cmsBuy = {}, cmsGlobal = {} }: { cmsBuy?: CmsPageData; cmsGlobal?: CmsPageData }) {
   const { address, isConnected, openConnectModal, referralCode, referredByCode } = useWallet();
   const { walletProvider } = useWeb3ModalProvider();
   const { data: tier } = useTierCurrent();
@@ -266,7 +279,11 @@ export default function BuyForm() {
 
   return (
     <Section id="buy">
-      <SectionHeading eyebrow="Presale" title="Buy $FDP" description="Lock in your price for 15 minutes and receive a deposit address." />
+      <SectionHeading
+        eyebrow="Presale"
+        title={cms(cmsBuy, 'form', 'title', 'Buy $FDP')}
+        description={cms(cmsBuy, 'form', 'subtitle', 'Lock in your price for 15 minutes and receive a deposit address.')}
+      />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
         <Card className="lg:col-span-3">
@@ -302,7 +319,7 @@ export default function BuyForm() {
             />
           </div>
           {validationError && <p className="mt-2 text-xs text-red">{validationError}</p>}
-          <p className="mt-2 text-xs text-ink-faint">{GAS_FEE_NOTES[methodKey]}</p>
+          <p className="mt-2 text-xs text-ink-faint">{resolveGasNote(cmsBuy, methodKey)}</p>
 
           <div className="mt-4 grid grid-cols-2 gap-3">
             <div className="rounded-lg border border-border bg-bg-soft p-3">
@@ -329,7 +346,7 @@ export default function BuyForm() {
 
           <div className="mt-4">
             <label htmlFor="referral" className="mb-1.5 block text-xs font-semibold uppercase tracking-widest text-ink-dim">
-              Referral Code (optional)
+              {cms(cmsBuy, 'referral', 'title', 'Referral Code (optional)')}
             </label>
             <input
               id="referral"
@@ -493,7 +510,7 @@ export default function BuyForm() {
 
         {vestingPreview && (
           <Card className="lg:col-span-5">
-            <p className="text-sm font-semibold text-ink">Your Vesting Schedule</p>
+            <p className="text-sm font-semibold text-ink">{cms(cmsBuy, 'vesting', 'title', 'Your Vesting Schedule')}</p>
             <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
               <div>
                 <p className="text-xs text-ink-dim">Total tokens</p>
@@ -560,8 +577,11 @@ export default function BuyForm() {
 
         <p className="text-center text-xs text-ink-faint lg:col-span-5">
           Need help? Contact{' '}
-          <a href="mailto:support@flowdexprotocol.com" className="font-medium text-primary hover:underline">
-            support@flowdexprotocol.com
+          <a
+            href={`mailto:${cms(cmsGlobal, 'site', 'support_email', 'support@flowdexprotocol.com')}`}
+            className="font-medium text-primary hover:underline"
+          >
+            {cms(cmsGlobal, 'site', 'support_email', 'support@flowdexprotocol.com')}
           </a>
         </p>
       </div>

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useWallet } from '@/context/wallet-context';
 import { Button, Mono } from './ui';
 import { truncateWallet } from '@/lib/format';
+import { cms, type CmsPageData } from '@/lib/cms';
 
 const NAV_LINKS = [
   { href: '#buy', label: 'Buy' },
@@ -71,16 +72,27 @@ function AccountMenu() {
   );
 }
 
-export default function Header() {
+export default function Header({ cmsGlobal = {} }: { cmsGlobal?: CmsPageData }) {
+  const logoType = cms(cmsGlobal, 'logo', 'type', 'text');
+  const logoImageUrl = cms(cmsGlobal, 'logo', 'image_url', '');
+  const logoMain = cms(cmsGlobal, 'logo', 'text_main', 'Flow');
+  const logoAccent = cms(cmsGlobal, 'logo', 'text_accent', 'Dex');
+
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-bg/85 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-4 sm:px-6 lg:px-8">
         <a href="#top" className="flex min-w-0 items-center gap-2 shrink-0">
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-purple font-bold text-[#03131a]">
-            F
-          </span>
+          {logoType === 'image' && logoImageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={logoImageUrl} alt={`${logoMain}${logoAccent}`} className="h-8 w-8 shrink-0 rounded-lg object-contain" />
+          ) : (
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-purple font-bold text-[#03131a]">
+              F
+            </span>
+          )}
           <span className="truncate text-base font-bold tracking-tight sm:text-lg">
-            FlowDex <span className="text-primary">Protocol</span>
+            {logoMain}
+            <span className="text-primary">{logoAccent}</span> Protocol
           </span>
         </a>
 

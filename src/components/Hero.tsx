@@ -2,9 +2,10 @@
 
 import { useTierCurrent } from '@/lib/hooks';
 import { formatCompactUsd, formatPct, formatPrice } from '@/lib/format';
+import { cms, type CmsPageData } from '@/lib/cms';
 import { Badge, Container, Mono, ProgressBar, Spinner } from './ui';
 
-export default function Hero() {
+export default function Hero({ cmsBuy = {} }: { cmsBuy?: CmsPageData }) {
   const { data: tier, loading } = useTierCurrent();
   const presaleComplete = !!tier?.message && !tier.price;
 
@@ -12,13 +13,15 @@ export default function Hero() {
     <div id="top" className="relative overflow-hidden bg-radial-glow border-b border-border">
       <Container className="py-16 sm:py-24 text-center">
         <Badge tone="primary" className="mb-6">
-          $FDP Presale Live
+          {cms(cmsBuy, 'hero', 'badge', '$FDP Presale Live')}
         </Badge>
 
         <h1 className="mx-auto max-w-3xl text-4xl sm:text-6xl font-bold tracking-tight text-ink">
-          Trade Everything.
+          {cms(cmsBuy, 'hero', 'headline_1', 'Trade Everything.')}
           <br />
-          <span className="bg-gradient-to-r from-primary to-purple bg-clip-text text-transparent">Know Everything.</span>
+          <span className="bg-gradient-to-r from-primary to-purple bg-clip-text text-transparent">
+            {cms(cmsBuy, 'hero', 'headline_2', 'Know Everything.')}
+          </span>
         </h1>
 
         <p className="mx-auto mt-5 max-w-xl text-sm sm:text-base text-ink-dim">

@@ -1,7 +1,7 @@
 'use client';
 
 import { useTierCurrent } from '@/lib/hooks';
-import { formatPct, formatPrice, formatUsd, toNum } from '@/lib/format';
+import { formatPercentage, formatTokenPrice, formatUSD, toNum } from '@/lib/format';
 import { Badge, Card, EmptyState, Mono, Section, SectionHeading, Spinner } from './ui';
 
 const LISTING_PRICE = 0.05;
@@ -33,18 +33,18 @@ export default function TierDisplay() {
           </Card>
           <Card>
             <p className="text-xs uppercase tracking-widest text-ink-dim">Price</p>
-            <Mono className="mt-1.5 block text-lg font-bold text-primary">{formatPrice(tier.price)}</Mono>
+            <Mono className="mt-1.5 block text-lg font-bold text-primary">{formatTokenPrice(tier.price)}</Mono>
           </Card>
           <Card>
-            <p className="text-xs uppercase tracking-widest text-ink-dim">Vs. Listing ({formatPrice(LISTING_PRICE)})</p>
+            <p className="text-xs uppercase tracking-widest text-ink-dim">Vs. Listing ({formatTokenPrice(LISTING_PRICE)})</p>
             <Mono className={`mt-1.5 block text-lg font-bold ${discountPct >= 0 ? 'text-green' : 'text-red'}`}>
               {discountPct >= 0 ? '−' : '+'}
-              {formatPct(Math.abs(discountPct), 1)}
+              {formatPercentage(Math.abs(discountPct), { decimals: 1, showSign: false })}
             </Mono>
           </Card>
           <Card>
             <p className="text-xs uppercase tracking-widest text-ink-dim">TGE Unlock</p>
-            <Mono className="mt-1.5 block text-lg font-bold text-ink">{formatPct(tier.tge_percentage, 0)}</Mono>
+            <Mono className="mt-1.5 block text-lg font-bold text-ink">{formatPercentage(tier.tge_percentage, { showSign: false })}</Mono>
           </Card>
 
           <Card className="col-span-2 sm:col-span-4 flex flex-wrap items-center gap-x-8 gap-y-3">
@@ -58,7 +58,7 @@ export default function TierDisplay() {
             </div>
             <div>
               <p className="text-xs uppercase tracking-widest text-ink-dim">Hard Cap</p>
-              <Mono className="mt-1 block text-sm font-semibold text-ink">{formatUsd(tier.hard_cap_usd)}</Mono>
+              <Mono className="mt-1 block text-sm font-semibold text-ink">{formatUSD(tier.hard_cap_usd)}</Mono>
             </div>
             <div className="ml-auto flex items-center gap-2">
               {tier.claims_open && <Badge tone="green">Claims Open</Badge>}

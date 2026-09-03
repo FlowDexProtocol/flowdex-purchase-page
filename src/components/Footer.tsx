@@ -1,3 +1,6 @@
+'use client';
+
+import { useState } from 'react';
 import { Container } from './ui';
 import { cms, type CmsPageData } from '@/lib/cms';
 
@@ -7,6 +10,7 @@ const LINKS = [
   { label: 'Leaderboard', href: '#leaderboard' },
   { label: 'Tiers', href: '#tiers' },
   { label: 'Staking', href: '#staking' },
+  { label: 'Check Status', href: '/status' },
 ];
 
 const LEGAL_LINKS = [{ label: 'Terms of Service', href: 'https://flowdexprotocol.com/terms' }];
@@ -17,6 +21,8 @@ export default function Footer({ cmsGlobal = {} }: { cmsGlobal?: CmsPageData }) 
   const logoMain = cms(cmsGlobal, 'logo', 'text_main', 'Flow');
   const logoAccent = cms(cmsGlobal, 'logo', 'text_accent', 'Dex');
   const supportEmail = cms(cmsGlobal, 'site', 'support_email', 'support@flowdexprotocol.com');
+  const [logoImageFailed, setLogoImageFailed] = useState(false);
+  const showLogoImage = logoType === 'image' && logoImageUrl && !logoImageFailed;
 
   const SOCIAL = [
     { label: 'X / Twitter', href: cms(cmsGlobal, 'social', 'twitter', 'https://x.com/flowdexprotocol') },
@@ -31,9 +37,14 @@ export default function Footer({ cmsGlobal = {} }: { cmsGlobal?: CmsPageData }) 
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-3">
           <div>
             <div className="flex items-center gap-0.5">
-              {logoType === 'image' && logoImageUrl ? (
+              {showLogoImage ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={logoImageUrl} alt={`${logoMain}${logoAccent}`} className="h-6 w-auto object-contain" />
+                <img
+                  src={logoImageUrl}
+                  alt={`${logoMain}${logoAccent}`}
+                  className="h-6 w-auto object-contain"
+                  onError={() => setLogoImageFailed(true)}
+                />
               ) : (
                 <>
                   <span className="text-base font-bold text-ink">{logoMain}</span>

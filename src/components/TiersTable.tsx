@@ -3,7 +3,7 @@
 import { usePolling } from '@/lib/hooks';
 import { getTiers } from '@/lib/api';
 import type { Tier } from '@/lib/types';
-import { formatPct, formatPrice, formatUsd } from '@/lib/format';
+import { formatPercentage, formatTokenPrice, formatUSD } from '@/lib/format';
 import { Badge, Card, EmptyState, Mono, Section, SectionHeading, Spinner } from './ui';
 
 export default function TiersTable() {
@@ -45,13 +45,13 @@ export default function TiersTable() {
                   <tr key={tier.id} className={tier.is_active ? 'bg-primary-dim/40' : undefined}>
                     <td className="px-5 py-3 font-semibold text-ink sm:px-6">{tier.name}</td>
                     <td className="px-5 py-3 sm:px-6">
-                      <Mono className="text-ink">{formatPrice(tier.price)}</Mono>
+                      <Mono className="text-ink">{formatTokenPrice(tier.price)}</Mono>
                     </td>
                     <td className="px-5 py-3 sm:px-6">
-                      <Mono className="text-ink-dim">{formatUsd(tier.hard_cap_usd)}</Mono>
+                      <Mono className="text-ink-dim">{formatUSD(tier.hard_cap_usd)}</Mono>
                     </td>
                     <td className="px-5 py-3 sm:px-6">
-                      <Mono className="text-ink-dim">{formatPct(tier.tge_percentage, 0)}</Mono>
+                      <Mono className="text-ink-dim">{formatPercentage(tier.tge_percentage, { showSign: false })}</Mono>
                     </td>
                     <td className="px-5 py-3 text-ink-dim sm:px-6">{tier.cliff_months}mo</td>
                     <td className="px-5 py-3 text-ink-dim sm:px-6">{tier.vest_months}mo</td>

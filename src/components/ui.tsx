@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type ButtonHTMLAttributes, type ReactNode } from 'react';
+import { useState, type ButtonHTMLAttributes, type HTMLAttributes, type InputHTMLAttributes, type ReactNode } from 'react';
 
 export function Container({ children, className = '' }: { children: ReactNode; className?: string }) {
   return <div className={`mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 ${className}`}>{children}</div>;
@@ -48,8 +48,16 @@ export function Card({ children, className = '' }: { children: ReactNode; classN
   );
 }
 
-export function Mono({ children, className = '' }: { children: ReactNode; className?: string }) {
-  return <span className={`font-mono tabular-nums ${className}`}>{children}</span>;
+export function Mono({
+  children,
+  className = '',
+  ...rest
+}: { children: ReactNode; className?: string } & HTMLAttributes<HTMLSpanElement>) {
+  return (
+    <span className={`font-mono tabular-nums ${className}`} {...rest}>
+      {children}
+    </span>
+  );
 }
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
@@ -199,6 +207,15 @@ export function VestingTimeline({
         </div>
       </div>
     </div>
+  );
+}
+
+export function Input({ className = '', ...rest }: InputHTMLAttributes<HTMLInputElement>) {
+  return (
+    <input
+      className={`min-h-11 w-full rounded-lg border border-border bg-bg-soft px-4 py-2.5 text-sm text-ink placeholder:text-ink-faint outline-none focus:border-primary/60 ${className}`}
+      {...rest}
+    />
   );
 }
 

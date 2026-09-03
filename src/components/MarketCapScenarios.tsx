@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { usePolling } from '@/lib/hooks';
 import { getPublicScenarios } from '@/lib/api';
 import type { ScenariosResponse } from '@/lib/types';
-import { formatCompactUsd, formatTokens, formatUsd } from '@/lib/format';
+import { formatCompactUSD, formatTokenAmount, formatUSD } from '@/lib/format';
 import { Card, EmptyState, Mono, Section, SectionHeading, Spinner } from './ui';
 
 export default function MarketCapScenarios() {
@@ -51,9 +51,9 @@ export default function MarketCapScenarios() {
               <Mono className="mt-1 block text-sm text-ink-dim">${s.price.toFixed(2)}</Mono>
               <div className="mt-4 border-t border-border pt-3">
                 <p className="text-xs uppercase tracking-widest text-ink-faint">Your $FDP worth</p>
-                <Mono className="mt-1 block text-base font-bold text-green">{formatUsd(tokenAmount * s.price)}</Mono>
+                <Mono className="mt-1 block text-base font-bold text-green">{formatUSD(tokenAmount * s.price)}</Mono>
               </div>
-              <Mono className="mt-2 block text-xs text-ink-faint">{formatCompactUsd(s.mcap)} mcap</Mono>
+              <Mono className="mt-2 block text-xs text-ink-faint">{formatCompactUSD(s.mcap)} mcap</Mono>
             </Card>
           ))}
         </div>
@@ -61,7 +61,7 @@ export default function MarketCapScenarios() {
 
       {data && (
         <p className="mt-4 text-xs text-ink-faint">
-          Based on a listing price of ${data.listing_price.toFixed(2)} and total supply of {formatTokens(data.total_supply, 0)} $FDP.
+          Based on a listing price of ${data.listing_price.toFixed(2)} and total supply of {formatTokenAmount(data.total_supply, 0)} $FDP.
         </p>
       )}
     </Section>

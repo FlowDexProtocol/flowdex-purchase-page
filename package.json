@@ -11,6 +11,7 @@
   "dependencies": {
     "@web3modal/ethers": "^5.1.11",
     "ethers": "^6.17.0",
+    "jspdf": "^4.2.1",
     "next": "16.3.3",
     "react": "19.2.8",
     "react-dom": "19.2.8",

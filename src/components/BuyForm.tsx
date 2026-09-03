@@ -8,7 +8,7 @@ import { useTierCurrent } from '@/lib/hooks';
 import { ApiError, applyReferral, getPrice, postPurchaseIntent } from '@/lib/api';
 import { checkEvmBalance } from '@/lib/balance';
 import { PAYMENT_METHODS, type PaymentMethodKey } from '@/lib/types';
-import { formatDuration, formatNumber, formatPrice, formatTokens, formatUsd, toNum } from '@/lib/format';
+import { formatCrypto, formatDuration, formatTokenPrice, formatTokenAmount, formatUSD, toNum } from '@/lib/format';
 import { cms, type CmsPageData } from '@/lib/cms';
 import { Badge, Button, Card, CopyButton, ErrorNote, Mono, Section, SectionHeading, Spinner, VestingTimeline } from './ui';
 import type { PurchaseIntentResponse, TierCurrent } from '@/lib/types';
@@ -125,7 +125,7 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {} }: { cmsBuy?: CmsP
   const validationError = useMemo(() => {
     if (!usdAmount) return null;
     if (usdNumber <= 0) return 'Enter an amount greater than $0.';
-    if (usdNumber < MIN_USD) return `Minimum purchase is ${formatUsd(MIN_USD)}.`;
+    if (usdNumber < MIN_USD) return `Minimum purchase is ${formatUSD(MIN_USD)}.`;
     if (usdNumber > MAX_USD) return 'Amount too large.';
     return null;
   }, [usdAmount, usdNumber]);
@@ -330,17 +330,17 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {} }: { cmsBuy?: CmsP
                 <p className="mt-1 text-xs text-red">Price unavailable</p>
               ) : (
                 <Mono className="mt-1 block text-base font-bold text-ink">
-                  {formatNumber(cryptoEquivalent, 6)} {method.crypto}
+                  {formatCrypto(cryptoEquivalent, method.crypto)}
                 </Mono>
               )}
               {price !== null && !priceLoading && (
-                <Mono className="mt-0.5 block text-xs text-ink-faint">1 {method.crypto} = {formatUsd(price)}</Mono>
+                <Mono className="mt-0.5 block text-xs text-ink-faint">1 {method.crypto} = {formatUSD(price)}</Mono>
               )}
             </div>
             <div className="rounded-lg border border-border bg-bg-soft p-3">
               <p className="text-xs text-ink-dim">Estimated $FDP</p>
-              <Mono className="mt-1 block text-base font-bold text-green">{formatTokens(fdpEstimate, 2)}</Mono>
-              {tierPrice > 0 && <Mono className="mt-0.5 block text-xs text-ink-faint">at {formatPrice(tierPrice)}/token</Mono>}
+              <Mono className="mt-1 block text-base font-bold text-green">{formatTokenAmount(fdpEstimate, 2)}</Mono>
+              {tierPrice > 0 && <Mono className="mt-0.5 block text-xs text-ink-faint">at {formatTokenPrice(tierPrice)}/token</Mono>}
             </div>
           </div>
 
@@ -432,11 +432,11 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {} }: { cmsBuy?: CmsP
                   <p className="mt-1.5 text-xs leading-relaxed text-ink-dim">
                     Your wallet has{' '}
                     <Mono className="text-ink">
-                      {formatNumber(balanceWarning.balance, 6)} {balanceWarning.symbol}
+                      {formatCrypto(balanceWarning.balance, balanceWarning.symbol)}
                     </Mono>{' '}
                     but this purchase requires{' '}
                     <Mono className="text-ink">
-                      {formatNumber(balanceWarning.required, 6)} {balanceWarning.symbol}
+                      {formatCrypto(balanceWarning.required, balanceWarning.symbol)}
                     </Mono>
                     . Please add funds to your wallet or reduce the purchase amount.
                   </p>
@@ -493,11 +493,11 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {} }: { cmsBuy?: CmsP
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div>
                   <p className="text-ink-dim">Price locked</p>
-                  <Mono className="text-ink">{formatUsd(intent.price_locked, { maximumFractionDigits: 6 })}</Mono>
+                  <Mono className="text-ink">{formatUSD(intent.price_locked, { maximumFractionDigits: 6 })}</Mono>
                 </div>
                 <div>
                   <p className="text-ink-dim">$FDP estimated</p>
-                  <Mono className="text-green">{formatTokens(intent.tokens_estimated)}</Mono>
+                  <Mono className="text-green">{formatTokenAmount(intent.tokens_estimated)}</Mono>
                 </div>
               </div>
 
@@ -514,11 +514,11 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {} }: { cmsBuy?: CmsP
             <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
               <div>
                 <p className="text-xs text-ink-dim">Total tokens</p>
-                <Mono className="mt-0.5 block text-base font-bold text-ink">{formatTokens(vestingPreview.totalTokens)} $FDP</Mono>
+                <Mono className="mt-0.5 block text-base font-bold text-ink">{formatTokenAmount(vestingPreview.totalTokens)} $FDP</Mono>
               </div>
               <div>
                 <p className="text-xs text-ink-dim">At TGE ({vestingPreview.tgePct}%)</p>
-                <Mono className="mt-0.5 block text-base font-bold text-primary">{formatTokens(vestingPreview.tgeTokens)} $FDP</Mono>
+                <Mono className="mt-0.5 block text-base font-bold text-primary">{formatTokenAmount(vestingPreview.tgeTokens)} $FDP</Mono>
                 <p className="mt-0.5 text-xs text-ink-faint">Available immediately when tier closes</p>
               </div>
               <div>
@@ -528,7 +528,7 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {} }: { cmsBuy?: CmsP
               </div>
               <div>
                 <p className="text-xs text-ink-dim">Vesting ({vestingPreview.vestMonths} months)</p>
-                <Mono className="mt-0.5 block text-base font-bold text-ink">{formatTokens(vestingPreview.remainingTokens)} $FDP</Mono>
+                <Mono className="mt-0.5 block text-base font-bold text-ink">{formatTokenAmount(vestingPreview.remainingTokens)} $FDP</Mono>
                 <p className="mt-0.5 text-xs text-ink-faint">Released linearly after the cliff</p>
               </div>
             </div>
@@ -554,21 +554,21 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {} }: { cmsBuy?: CmsP
               <div className="rounded-lg border border-border bg-bg-soft p-3">
                 <p className="text-xs text-ink-dim">Your bonus (30%)</p>
                 <Mono className="mt-0.5 block text-base font-bold text-green">
-                  {formatTokens(referralBonusPreview.buyerBonusTokens)} $FDP
+                  {formatTokenAmount(referralBonusPreview.buyerBonusTokens)} $FDP
                 </Mono>
-                <p className="mt-0.5 text-xs text-ink-faint">+ {formatUsd(referralBonusPreview.buyerCredits)} Terminal Credits</p>
+                <p className="mt-0.5 text-xs text-ink-faint">+ {formatUSD(referralBonusPreview.buyerCredits)} Terminal Credits</p>
               </div>
               <div className="rounded-lg border border-border bg-bg-soft p-3">
                 <p className="text-xs text-ink-dim">Referrer bonus (15%)</p>
                 <Mono className="mt-0.5 block text-base font-bold text-primary">
-                  {formatTokens(referralBonusPreview.referrerBonusTokens)} $FDP
+                  {formatTokenAmount(referralBonusPreview.referrerBonusTokens)} $FDP
                 </Mono>
-                <p className="mt-0.5 text-xs text-ink-faint">+ {formatUsd(referralBonusPreview.referrerCredits)} Terminal Credits</p>
+                <p className="mt-0.5 text-xs text-ink-faint">+ {formatUSD(referralBonusPreview.referrerCredits)} Terminal Credits</p>
               </div>
             </div>
             <p className="mt-4 text-xs text-ink-dim">
               Tokens burned:{' '}
-              <span className="font-semibold text-ink">{formatTokens(referralBonusPreview.totalBurned)} $FDP</span> permanently
+              <span className="font-semibold text-ink">{formatTokenAmount(referralBonusPreview.totalBurned)} $FDP</span> permanently
               removed from supply 🔥
             </p>
             <p className="mt-1.5 text-xs text-ink-faint">Terminal Credits redeemable when the Intelligence Terminal launches.</p>

@@ -3,7 +3,7 @@
 import { usePolling } from '@/lib/hooks';
 import { getPublicLeaders } from '@/lib/api';
 import type { LeaderboardEntry } from '@/lib/types';
-import { formatTokens, formatUsd } from '@/lib/format';
+import { formatTokenAmount, formatUSD } from '@/lib/format';
 import { Badge, Card, EmptyState, Mono, Section, SectionHeading, Spinner } from './ui';
 
 const RANK_TONE = ['text-primary', 'text-ink-dim', 'text-purple'] as const;
@@ -45,8 +45,8 @@ export default function Leaderboard() {
                   </p>
                 </div>
                 <div className="text-right">
-                  <Mono className="block text-sm font-bold text-ink">{formatUsd(entry.total_usd)}</Mono>
-                  <Mono className="block text-xs text-ink-faint">{formatTokens(entry.total_tokens)} $FDP</Mono>
+                  <Mono className="block text-sm font-bold text-ink">{formatUSD(entry.total_usd)}</Mono>
+                  <Mono className="block text-xs text-ink-faint">{formatTokenAmount(entry.total_tokens)} $FDP</Mono>
                 </div>
               </div>
             ))}

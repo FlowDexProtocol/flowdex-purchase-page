@@ -77,14 +77,21 @@ export default function Header({ cmsGlobal = {} }: { cmsGlobal?: CmsPageData }) 
   const logoImageUrl = cms(cmsGlobal, 'logo', 'image_url', '');
   const logoMain = cms(cmsGlobal, 'logo', 'text_main', 'Flow');
   const logoAccent = cms(cmsGlobal, 'logo', 'text_accent', 'Dex');
+  const [logoImageFailed, setLogoImageFailed] = useState(false);
+  const showLogoImage = logoType === 'image' && logoImageUrl && !logoImageFailed;
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-bg/85 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-4 sm:px-6 lg:px-8">
         <a href="#top" className="flex min-w-0 items-center gap-0.5 shrink-0">
-          {logoType === 'image' && logoImageUrl ? (
+          {showLogoImage ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={logoImageUrl} alt={`${logoMain}${logoAccent}`} className="h-8 w-auto object-contain" />
+            <img
+              src={logoImageUrl}
+              alt={`${logoMain}${logoAccent}`}
+              className="h-8 w-auto object-contain"
+              onError={() => setLogoImageFailed(true)}
+            />
           ) : (
             <>
               <span className="text-lg font-bold text-ink">{logoMain}</span>

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useWallet } from '@/context/wallet-context';
 import { getReferralCredits, getReferralList, getReferralStats } from '@/lib/api';
 import type { ReferralCredits, ReferralStats, ReferredUser } from '@/lib/types';
-import { formatDate, formatTokens, formatUsd, toNum, truncateWallet } from '@/lib/format';
+import { formatDate, formatTokenAmount, formatUSD, toNum, truncateWallet } from '@/lib/format';
 import { Badge, Button, Card, EmptyState, ErrorNote, Mono, Spinner } from './ui';
 
 // The bonus-token share of a referral bonus is always 30% of its USD value
@@ -141,17 +141,17 @@ export default function ReferralTab() {
         </Card>
         <Card>
           <p className="text-xs uppercase tracking-widest text-ink-dim">Referral Volume</p>
-          <Mono className="mt-1.5 block text-xl font-bold text-ink">{formatUsd(stats?.total_referral_volume_usd)}</Mono>
+          <Mono className="mt-1.5 block text-xl font-bold text-ink">{formatUSD(stats?.total_referral_volume_usd)}</Mono>
         </Card>
         <Card>
           <p className="text-xs uppercase tracking-widest text-ink-dim">Your Token Earnings</p>
           <Mono className="mt-1.5 block text-xl font-bold text-green">
-            {formatTokens(stats?.total_referral_earnings_tokens ?? 0)} $FDP
+            {formatTokenAmount(stats?.total_referral_earnings_tokens ?? 0)} $FDP
           </Mono>
         </Card>
         <Card>
           <p className="text-xs uppercase tracking-widest text-ink-dim">Your Terminal Credits</p>
-          <Mono className="mt-1.5 block text-xl font-bold text-purple">{formatUsd(credits?.total_credits ?? 0)}</Mono>
+          <Mono className="mt-1.5 block text-xl font-bold text-purple">{formatUSD(credits?.total_credits ?? 0)}</Mono>
         </Card>
       </div>
 
@@ -184,19 +184,19 @@ export default function ReferralTab() {
                       </span>
                     </td>
                     <td className="px-2 py-2.5">
-                      <Mono>{formatUsd(r.total_volume_usd)}</Mono>
+                      <Mono>{formatUSD(r.total_volume_usd)}</Mono>
                     </td>
                     <td className="px-2 py-2.5">
-                      <Mono className="text-green">{formatUsd(r.referrer_bonus_usd)}</Mono>
+                      <Mono className="text-green">{formatUSD(r.referrer_bonus_usd)}</Mono>
                     </td>
                     <td className="px-2 py-2.5">
-                      <Mono className="text-primary">{formatTokens(r.referrer_bonus_tokens)}</Mono>
+                      <Mono className="text-primary">{formatTokenAmount(r.referrer_bonus_tokens)}</Mono>
                     </td>
                     <td className="px-2 py-2.5">
-                      <Mono className="text-purple">{formatUsd(r.referrer_terminal_credits)}</Mono>
+                      <Mono className="text-purple">{formatUSD(r.referrer_terminal_credits)}</Mono>
                     </td>
                     <td className="px-2 py-2.5">
-                      <Mono className="text-ink-faint">{formatTokens(toNum(r.referrer_bonus_tokens) / TOKEN_SHARE_PCT)}</Mono>
+                      <Mono className="text-ink-faint">{formatTokenAmount(toNum(r.referrer_bonus_tokens) / TOKEN_SHARE_PCT)}</Mono>
                     </td>
                   </tr>
                 ))}
@@ -210,14 +210,14 @@ export default function ReferralTab() {
         <p className="text-sm font-semibold text-ink">Token Burn Summary</p>
         <p className="mt-2 text-sm text-ink-dim">
           Total tokens burned from your referrals:{' '}
-          <Mono className="font-semibold text-ink">{formatTokens(stats?.total_tokens_burned ?? 0)}</Mono> $FDP 🔥
+          <Mono className="font-semibold text-ink">{formatTokenAmount(stats?.total_tokens_burned ?? 0)}</Mono> $FDP 🔥
         </p>
         <p className="mt-1.5 text-xs text-ink-faint">Burning reduces total supply, increasing value for all holders.</p>
       </Card>
 
       <Card>
         <p className="text-sm font-semibold text-ink">Terminal Credits</p>
-        <Mono className="mt-2 block text-2xl font-bold text-purple">{formatUsd(credits?.total_credits ?? 0)}</Mono>
+        <Mono className="mt-2 block text-2xl font-bold text-purple">{formatUSD(credits?.total_credits ?? 0)}</Mono>
         <div className="mt-3 space-y-1 text-xs">
           <p className="text-ink-dim">
             Status: <span className="font-semibold text-ink">{credits?.status === 'active' ? 'Accumulating' : credits?.status || 'Accumulating'}</span>

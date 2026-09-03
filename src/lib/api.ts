@@ -11,6 +11,8 @@ import type {
   PriceResponse,
   Purchase,
   PurchaseIntentResponse,
+  PurchaseReceipt,
+  PurchaseStatusResponse,
   PublicStats,
   ReferralCredits,
   ReferralStats,
@@ -95,6 +97,11 @@ export interface PurchaseIntentPayload {
 export const postPurchaseIntent = (payload: PurchaseIntentPayload) =>
   request<PurchaseIntentResponse>('/api/purchases/intent', { method: 'POST', body: payload });
 
+// Path assumed to match Fix 1's spec literally (singular "purchase") —
+// GET /api/purchase/status/:tx_hash, public, no auth.
+export const getPurchaseStatus = (txHash: string) =>
+  request<PurchaseStatusResponse>(`/api/purchase/status/${encodeURIComponent(txHash)}`);
+
 // ── Wallet ──
 export interface WalletConnectPayload {
   wallet_address: string;
@@ -116,6 +123,9 @@ export const getBuyerProfile = (wallet: string, token: string) =>
 
 export const getBuyerPurchases = (wallet: string, token: string) =>
   request<{ success: boolean; purchases: Purchase[] }>(`/api/buyer/${wallet}/purchases`, { token });
+
+export const getPurchaseReceipt = (wallet: string, purchaseId: number, token: string) =>
+  request<PurchaseReceipt>(`/api/buyer/${wallet}/receipt/${purchaseId}`, { token });
 
 // ── Referrals (public by wallet) ──
 export const getReferralStats = (wallet: string) =>

@@ -12,7 +12,8 @@ export function toNum(value: Numeric | null | undefined): number {
   return Number.isFinite(n) ? n : 0;
 }
 
-export function formatUsd(value: Numeric | null | undefined, opts: Intl.NumberFormatOptions = {}): string {
+// "$1,234.56" — always 2 decimals.
+export function formatUSD(value: Numeric | null | undefined, opts: Intl.NumberFormatOptions = {}): string {
   const n = toNum(value);
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -23,7 +24,8 @@ export function formatUsd(value: Numeric | null | undefined, opts: Intl.NumberFo
   }).format(n);
 }
 
-export function formatCompactUsd(value: Numeric | null | undefined): string {
+// "$1.2M" / "$500K" — for large numbers.
+export function formatCompactUSD(value: Numeric | null | undefined): string {
   const n = toNum(value);
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -33,7 +35,9 @@ export function formatCompactUsd(value: Numeric | null | undefined): string {
   }).format(n);
 }
 
-export function formatTokens(value: Numeric | null | undefined, maxDecimals = 2): string {
+// "500,000" — whole tokens, comma-grouped. Pass maxDecimals for the rare
+// fractional-estimate display (e.g. an unconfirmed token estimate).
+export function formatTokenAmount(value: Numeric | null | undefined, maxDecimals = 0): string {
   const n = toNum(value);
   return new Intl.NumberFormat('en-US', {
     minimumFractionDigits: 0,
@@ -46,14 +50,30 @@ export function formatNumber(value: Numeric | null | undefined, maxDecimals = 4)
   return new Intl.NumberFormat('en-US', { maximumFractionDigits: maxDecimals }).format(n);
 }
 
-export function formatPct(value: Numeric | null | undefined, decimals = 1): string {
+// "+4,900%" — signed by default (for ROI/change values); pass
+// showSign:false for a plain magnitude (TGE %, fill %, discount %, etc.).
+export function formatPercentage(
+  value: Numeric | null | undefined,
+  opts: { decimals?: number; showSign?: boolean } = {}
+): string {
+  const { decimals = 0, showSign = true } = opts;
   const n = toNum(value);
-  return `${n.toFixed(decimals)}%`;
+  const sign = showSign && n > 0 ? '+' : '';
+  return `${sign}${n.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}%`;
 }
 
-export function formatPrice(value: Numeric | null | undefined, decimals = 4): string {
+// "$0.0010" under $1, "$1.25" at/over $1 — token/asset prices span both ranges.
+export function formatTokenPrice(value: Numeric | null | undefined): string {
   const n = toNum(value);
+  const decimals = Math.abs(n) < 1 ? 4 : 2;
   return `$${n.toFixed(decimals)}`;
+}
+
+// "0.1017 ETH" — more decimals for smaller amounts so dust isn't rounded away.
+export function formatCrypto(value: Numeric | null | undefined, symbol: string): string {
+  const n = toNum(value);
+  const decimals = n === 0 ? 4 : Math.abs(n) < 0.001 ? 6 : Math.abs(n) < 1 ? 5 : 4;
+  return `${formatNumber(n, decimals)} ${symbol}`;
 }
 
 export function truncateWallet(wallet: string | null | undefined, lead = 6, trail = 4): string {

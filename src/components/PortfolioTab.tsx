@@ -2,10 +2,12 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useWallet } from '@/context/wallet-context';
-import { getBuyerProfile, getBuyerPurchases, getClaims, getTiers } from '@/lib/api';
+import { ApiError, getBuyerProfile, getBuyerPurchases, getClaims, getPurchaseReceipt, getTiers } from '@/lib/api';
 import type { BuyerProfile, Claim, Purchase, Tier } from '@/lib/types';
-import { formatDate, formatTokens, formatUsd, toNum } from '@/lib/format';
+import { formatDate, formatTokenAmount, formatUSD, toNum, truncateWallet } from '@/lib/format';
+import { getExplorerUrl } from '@/lib/explorer';
 import { getVestingDates } from '@/lib/vesting';
+import { downloadReceiptPdf } from '@/lib/receipt';
 import { Badge, Card, EmptyState, ErrorNote, Mono, ProgressBar, Spinner } from './ui';
 
 export default function PortfolioTab() {
@@ -16,6 +18,22 @@ export default function PortfolioTab() {
   const [tiers, setTiers] = useState<Tier[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [downloadingId, setDownloadingId] = useState<number | null>(null);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
+
+  async function handleDownloadReceipt(purchaseId: number) {
+    if (!address) return;
+    setDownloadingId(purchaseId);
+    setDownloadError(null);
+    try {
+      const receipt = await authedFetch((token) => getPurchaseReceipt(address, purchaseId, token));
+      downloadReceiptPdf(receipt);
+    } catch (err) {
+      setDownloadError(err instanceof ApiError ? err.message : 'Failed to generate receipt. Please try again.');
+    } finally {
+      setDownloadingId(null);
+    }
+  }
 
   useEffect(() => {
     if (!address) return;
@@ -65,7 +83,7 @@ export default function PortfolioTab() {
     const eligible = claims.find((c) => c.status === 'eligible');
     let nextUnlock: { label: string } | null = null;
     if (eligible) {
-      nextUnlock = { label: `${formatTokens(toNum(eligible.total_claimable))} $FDP ready to claim now (${eligible.tier_name || `Tier ${eligible.tier_id}`})` };
+      nextUnlock = { label: `${formatTokenAmount(toNum(eligible.total_claimable))} $FDP ready to claim now (${eligible.tier_name || `Tier ${eligible.tier_id}`})` };
     } else {
       const now = new Date();
       let nearestCliff: { date: Date; tierName: string } | null = null;
@@ -113,11 +131,11 @@ export default function PortfolioTab() {
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <Card>
           <p className="text-xs uppercase tracking-widest text-ink-dim">Total $FDP</p>
-          <Mono className="mt-1.5 block text-xl font-bold text-primary">{formatTokens(profile.total_tokens)}</Mono>
+          <Mono className="mt-1.5 block text-xl font-bold text-primary">{formatTokenAmount(profile.total_tokens)}</Mono>
         </Card>
         <Card>
           <p className="text-xs uppercase tracking-widest text-ink-dim">Total Spent</p>
-          <Mono className="mt-1.5 block text-xl font-bold text-ink">{formatUsd(profile.total_usd_spent)}</Mono>
+          <Mono className="mt-1.5 block text-xl font-bold text-ink">{formatUSD(profile.total_usd_spent)}</Mono>
         </Card>
         <Card>
           <p className="text-xs uppercase tracking-widest text-ink-dim">Purchases</p>
@@ -125,7 +143,7 @@ export default function PortfolioTab() {
         </Card>
         <Card>
           <p className="text-xs uppercase tracking-widest text-ink-dim">Bonus $FDP</p>
-          <Mono className="mt-1.5 block text-xl font-bold text-green">{formatTokens(profile.total_bonus_tokens)}</Mono>
+          <Mono className="mt-1.5 block text-xl font-bold text-green">{formatTokenAmount(profile.total_bonus_tokens)}</Mono>
         </Card>
       </div>
 
@@ -135,33 +153,33 @@ export default function PortfolioTab() {
           <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3">
             <div>
               <p className="text-xs text-ink-dim">Purchased tokens</p>
-              <Mono className="mt-0.5 block text-base font-bold text-ink">{formatTokens(vesting.purchasedTokens)} $FDP</Mono>
+              <Mono className="mt-0.5 block text-base font-bold text-ink">{formatTokenAmount(vesting.purchasedTokens)} $FDP</Mono>
             </div>
             {vesting.referralBonusTokens > 0 && (
               <div>
                 <p className="text-xs text-ink-dim">Referral bonus tokens</p>
-                <Mono className="mt-0.5 block text-base font-bold text-purple">{formatTokens(vesting.referralBonusTokens)} $FDP</Mono>
+                <Mono className="mt-0.5 block text-base font-bold text-purple">{formatTokenAmount(vesting.referralBonusTokens)} $FDP</Mono>
               </div>
             )}
             {vesting.purchaseBonusTokens > 0 && (
               <div>
                 <p className="text-xs text-ink-dim">Purchase bonus tokens</p>
-                <Mono className="mt-0.5 block text-base font-bold text-primary">{formatTokens(vesting.purchaseBonusTokens)} $FDP</Mono>
+                <Mono className="mt-0.5 block text-base font-bold text-primary">{formatTokenAmount(vesting.purchaseBonusTokens)} $FDP</Mono>
               </div>
             )}
             <div>
               <p className="text-xs text-ink-dim">Total</p>
-              <Mono className="mt-0.5 block text-base font-bold text-ink">{formatTokens(vesting.totalTokens)} $FDP</Mono>
+              <Mono className="mt-0.5 block text-base font-bold text-ink">{formatTokenAmount(vesting.totalTokens)} $FDP</Mono>
             </div>
           </div>
 
           <div className="mt-5">
             <div className="mb-1.5 flex items-center justify-between text-xs text-ink-dim">
               <span>
-                Claimed <Mono className="text-green">{formatTokens(vesting.claimedTokens)}</Mono> ({vesting.claimedPct.toFixed(0)}%)
+                Claimed <Mono className="text-green">{formatTokenAmount(vesting.claimedTokens)}</Mono> ({vesting.claimedPct.toFixed(0)}%)
               </span>
               <span>
-                Vesting <Mono className="text-ink">{formatTokens(vesting.vestingTokens)}</Mono> ({(100 - vesting.claimedPct).toFixed(0)}%)
+                Vesting <Mono className="text-ink">{formatTokenAmount(vesting.vestingTokens)}</Mono> ({(100 - vesting.claimedPct).toFixed(0)}%)
               </span>
             </div>
             <ProgressBar pct={vesting.claimedPct} />
@@ -177,6 +195,11 @@ export default function PortfolioTab() {
 
       <Card>
         <p className="mb-4 text-sm font-semibold text-ink">Purchase History</p>
+        {downloadError && (
+          <div className="mb-4">
+            <ErrorNote>{downloadError}</ErrorNote>
+          </div>
+        )}
         {purchases.length === 0 ? (
           <EmptyState>No purchases yet.</EmptyState>
         ) : (
@@ -189,24 +212,62 @@ export default function PortfolioTab() {
                   <th className="px-2 pb-2 font-medium">$FDP</th>
                   <th className="px-2 pb-2 font-medium">Tier</th>
                   <th className="px-2 pb-2 font-medium">Status</th>
+                  <th className="px-2 pb-2 font-medium">Tx Hash</th>
+                  <th className="px-2 pb-2 font-medium"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {purchases.map((p) => (
-                  <tr key={p.id}>
-                    <td className="whitespace-nowrap px-2 py-2.5 text-ink-dim">{formatDate(p.created_at)}</td>
-                    <td className="px-2 py-2.5">
-                      <Mono>{formatUsd(p.usd_value)}</Mono> <span className="text-ink-faint">{p.crypto_currency}</span>
-                    </td>
-                    <td className="px-2 py-2.5">
-                      <Mono>{formatTokens(p.tokens_allocated)}</Mono>
-                    </td>
-                    <td className="px-2 py-2.5 text-ink-dim">{p.tier_name || '—'}</td>
-                    <td className="px-2 py-2.5">
-                      <Badge tone={statusTone(p.status)}>{p.status}</Badge>
-                    </td>
-                  </tr>
-                ))}
+                {purchases.map((p) => {
+                  const explorerUrl = getExplorerUrl(p.chain, p.tx_hash);
+                  return (
+                    <tr key={p.id}>
+                      <td className="whitespace-nowrap px-2 py-2.5 text-ink-dim">{formatDate(p.created_at)}</td>
+                      <td className="px-2 py-2.5">
+                        <Mono>{formatUSD(p.usd_value)}</Mono> <span className="text-ink-faint">{p.crypto_currency}</span>
+                      </td>
+                      <td className="px-2 py-2.5">
+                        <Mono>{formatTokenAmount(p.tokens_allocated)}</Mono>
+                      </td>
+                      <td className="px-2 py-2.5 text-ink-dim">{p.tier_name || '—'}</td>
+                      <td className="px-2 py-2.5">
+                        <Badge tone={statusTone(p.status)}>{p.status}</Badge>
+                      </td>
+                      <td className="px-2 py-2.5">
+                        {p.tx_hash ? (
+                          explorerUrl ? (
+                            <a
+                              href={explorerUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="font-mono text-xs text-primary hover:underline"
+                              title={p.tx_hash}
+                            >
+                              {truncateWallet(p.tx_hash)}
+                            </a>
+                          ) : (
+                            <Mono className="text-xs text-ink-faint" title={p.tx_hash}>
+                              {truncateWallet(p.tx_hash)}
+                            </Mono>
+                          )
+                        ) : (
+                          <span className="text-ink-faint">—</span>
+                        )}
+                      </td>
+                      <td className="px-2 py-2.5">
+                        {p.status === 'confirmed' && (
+                          <button
+                            type="button"
+                            onClick={() => handleDownloadReceipt(p.id)}
+                            disabled={downloadingId === p.id}
+                            className="min-h-11 whitespace-nowrap rounded-md border border-border px-2.5 py-1 text-xs font-semibold text-ink-dim transition-colors hover:border-primary/50 hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            {downloadingId === p.id ? 'Generating…' : 'Download Receipt'}
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

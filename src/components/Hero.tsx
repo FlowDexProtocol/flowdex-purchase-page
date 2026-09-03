@@ -1,7 +1,7 @@
 'use client';
 
 import { useTierCurrent } from '@/lib/hooks';
-import { formatCompactUsd, formatPct, formatPrice } from '@/lib/format';
+import { formatCompactUSD, formatPercentage, formatTokenPrice } from '@/lib/format';
 import { cms, type CmsPageData } from '@/lib/cms';
 import { Badge, Container, Mono, ProgressBar, Spinner } from './ui';
 
@@ -49,22 +49,22 @@ export default function Hero({ cmsBuy = {} }: { cmsBuy?: CmsPageData }) {
                 </div>
                 <div className="text-right">
                   <p className="text-xs uppercase tracking-widest text-ink-dim">Price</p>
-                  <Mono className="text-xl font-bold text-primary">{formatPrice(tier.price)}</Mono>
+                  <Mono className="text-xl font-bold text-primary">{formatTokenPrice(tier.price)}</Mono>
                 </div>
               </div>
 
               <div className="mt-5">
                 <div className="mb-1.5 flex items-center justify-between text-xs text-ink-dim">
                   <span>
-                    Raised <Mono className="text-ink">{formatCompactUsd(tier.total_raised_usd)}</Mono>
+                    Raised <Mono className="text-ink">{formatCompactUSD(tier.total_raised_usd)}</Mono>
                   </span>
                   <span>
-                    Cap <Mono className="text-ink">{formatCompactUsd(tier.hard_cap_usd)}</Mono>
+                    Cap <Mono className="text-ink">{formatCompactUSD(tier.hard_cap_usd)}</Mono>
                   </span>
                 </div>
                 <ProgressBar pct={parseFloat(tier.progress_pct)} />
                 <div className="mt-1.5 flex items-center justify-between text-xs text-ink-dim">
-                  <Mono>{formatPct(tier.progress_pct, 1)} filled</Mono>
+                  <Mono>{formatPercentage(tier.progress_pct, { decimals: 1, showSign: false })} filled</Mono>
                   {tier.bonus && <Badge tone="green">{tier.bonus} bonus</Badge>}
                 </div>
               </div>

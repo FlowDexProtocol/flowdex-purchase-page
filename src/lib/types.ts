@@ -45,6 +45,36 @@ export interface PriceResponse {
   updated_at: string;
 }
 
+export interface PurchaseStatusResponse {
+  found: boolean;
+  status?: string;
+  usd_value?: Numeric;
+  tokens_allocated?: Numeric;
+  tier_name?: string;
+  created_at?: string;
+  confirmed_at?: string;
+}
+
+export interface PurchaseReceipt {
+  id: number;
+  created_at: string;
+  buyer_wallet: string;
+  chain: string;
+  crypto_currency: string;
+  crypto_amount: Numeric;
+  usd_value: Numeric;
+  tier_name: string;
+  tier_price: Numeric;
+  tokens_allocated: Numeric;
+  bonus_tokens?: Numeric;
+  referral_code_used?: string | null;
+  tx_hash: string;
+  status: string;
+  tge_percentage: Numeric;
+  cliff_months: number;
+  vest_months: number;
+}
+
 export interface PurchaseIntentResponse {
   success: boolean;
   intent_id: number;

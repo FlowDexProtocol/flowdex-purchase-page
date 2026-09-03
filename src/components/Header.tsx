@@ -81,19 +81,16 @@ export default function Header({ cmsGlobal = {} }: { cmsGlobal?: CmsPageData }) 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-bg/85 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-4 sm:px-6 lg:px-8">
-        <a href="#top" className="flex min-w-0 items-center gap-2 shrink-0">
+        <a href="#top" className="flex min-w-0 items-center gap-0.5 shrink-0">
           {logoType === 'image' && logoImageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={logoImageUrl} alt={`${logoMain}${logoAccent}`} className="h-8 w-8 shrink-0 rounded-lg object-contain" />
+            <img src={logoImageUrl} alt={`${logoMain}${logoAccent}`} className="h-8 w-auto object-contain" />
           ) : (
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-purple font-bold text-[#03131a]">
-              F
-            </span>
+            <>
+              <span className="text-lg font-bold text-ink">{logoMain}</span>
+              <span className="text-lg font-bold text-primary">{logoAccent}</span>
+            </>
           )}
-          <span className="truncate text-base font-bold tracking-tight sm:text-lg">
-            {logoMain}
-            <span className="text-primary">{logoAccent}</span> Protocol
-          </span>
         </a>
 
         <nav className="hidden lg:flex items-center gap-6">

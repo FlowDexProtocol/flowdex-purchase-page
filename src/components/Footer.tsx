@@ -30,19 +30,16 @@ export default function Footer({ cmsGlobal = {} }: { cmsGlobal?: CmsPageData }) 
       <Container className="py-12">
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-3">
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-0.5">
               {logoType === 'image' && logoImageUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={logoImageUrl} alt={`${logoMain}${logoAccent}`} className="h-8 w-8 rounded-lg object-contain" />
+                <img src={logoImageUrl} alt={`${logoMain}${logoAccent}`} className="h-6 w-auto object-contain" />
               ) : (
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-purple font-bold text-[#03131a]">
-                  F
-                </span>
+                <>
+                  <span className="text-base font-bold text-ink">{logoMain}</span>
+                  <span className="text-base font-bold text-primary">{logoAccent}</span>
+                </>
               )}
-              <span className="text-lg font-bold">
-                {logoMain}
-                <span className="text-primary">{logoAccent}</span> Protocol
-              </span>
             </div>
             <p className="mt-3 max-w-xs text-sm text-ink-dim">
               {cms(cmsGlobal, 'site', 'tagline', 'Trade Everything. Know Everything.')}
@@ -90,9 +87,7 @@ export default function Footer({ cmsGlobal = {} }: { cmsGlobal?: CmsPageData }) 
               'This is not financial advice. $FDP is a utility token. Cryptocurrency purchases carry risk, including total loss of funds. Presale tokens are subject to a cliff and vesting schedule and may not be immediately liquid. Nothing on this page constitutes an offer or solicitation to sell securities in any jurisdiction where such an offer would be unlawful.'
             )}
           </p>
-          <p className="mt-4 text-xs text-ink-faint">
-            {cms(cmsGlobal, 'footer', 'copyright', `© ${new Date().getFullYear()} FlowDex Protocol. All rights reserved.`)}
-          </p>
+          <p className="mt-4 text-xs text-ink-faint">© {new Date().getFullYear()} FlowDex Protocol. All rights reserved.</p>
           <div className="mt-1 flex flex-wrap gap-x-4">
             {LEGAL_LINKS.map((l) => (
               <a

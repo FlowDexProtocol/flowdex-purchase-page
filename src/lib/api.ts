@@ -97,10 +97,11 @@ export interface PurchaseIntentPayload {
 export const postPurchaseIntent = (payload: PurchaseIntentPayload) =>
   request<PurchaseIntentResponse>('/api/purchases/intent', { method: 'POST', body: payload });
 
-// Path assumed to match Fix 1's spec literally (singular "purchase") —
-// GET /api/purchase/status/:tx_hash, public, no auth.
+// GET /api/purchases/status/:tx_hash, public, no auth. Plural "purchases" —
+// matches this router's actual mount prefix in flowdex-backend (verified
+// against the real deployed route, not the spec's literal singular path).
 export const getPurchaseStatus = (txHash: string) =>
-  request<PurchaseStatusResponse>(`/api/purchase/status/${encodeURIComponent(txHash)}`);
+  request<PurchaseStatusResponse>(`/api/purchases/status/${encodeURIComponent(txHash)}`);
 
 // ── Wallet ──
 export interface WalletConnectPayload {

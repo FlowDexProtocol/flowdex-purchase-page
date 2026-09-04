@@ -22,6 +22,8 @@
   --color-purple-dim: rgba(153, 69, 255, 0.14);
   --color-amber: #f59e0b;
   --color-amber-dim: rgba(245, 158, 11, 0.12);
+  /* Matches flowdex-landing's footer background exactly. */
+  --color-footer-bg: #040a14;
 }
 
 @theme inline {
@@ -43,6 +45,7 @@
   --color-purple-dim: var(--color-purple-dim);
   --color-amber: var(--color-amber);
   --color-amber-dim: var(--color-amber-dim);
+  --color-footer-bg: var(--color-footer-bg);
   --font-sans: var(--font-dm-sans), system-ui, sans-serif;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
 }

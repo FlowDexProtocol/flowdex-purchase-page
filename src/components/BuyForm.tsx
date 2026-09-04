@@ -409,14 +409,14 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {} }: { cmsBuy?: CmsP
         <Card className="lg:col-span-2">
           <p className="text-xs font-semibold uppercase tracking-widest text-ink-dim">Payment Instructions</p>
           {balanceWarning ? (
-            <div className="mt-4 rounded-lg border border-amber bg-amber-dim p-4">
+            <div className="mt-4 rounded-lg border border-red bg-red-dim p-4">
               <div className="flex items-start gap-3">
                 <svg
                   width="20"
                   height="20"
                   viewBox="0 0 24 24"
                   fill="none"
-                  className="mt-0.5 shrink-0 text-amber"
+                  className="mt-0.5 shrink-0 text-red"
                   aria-hidden="true"
                 >
                   <path
@@ -428,7 +428,7 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {} }: { cmsBuy?: CmsP
                   />
                 </svg>
                 <div>
-                  <p className="text-sm font-semibold text-amber">Insufficient Balance</p>
+                  <p className="text-sm font-semibold text-red">Insufficient Balance</p>
                   <p className="mt-1.5 text-xs leading-relaxed text-ink-dim">
                     Your wallet has{' '}
                     <Mono className="text-ink">
@@ -510,7 +510,7 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {} }: { cmsBuy?: CmsP
 
         {vestingPreview && (
           <Card className="lg:col-span-5">
-            <p className="text-sm font-semibold text-ink">{cms(cmsBuy, 'vesting', 'title', 'Your Vesting Schedule')}</p>
+            <p className="text-lg font-semibold text-ink">{cms(cmsBuy, 'vesting', 'title', 'Your Vesting Schedule')}</p>
             <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
               <div>
                 <p className="text-xs text-ink-dim">Total tokens</p>
@@ -549,7 +549,7 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {} }: { cmsBuy?: CmsP
 
         {referralBonusPreview && (
           <Card className="lg:col-span-5">
-            <p className="text-sm font-semibold text-ink">Referral Bonus Applied</p>
+            <p className="text-lg font-semibold text-ink">Referral Bonus Applied</p>
             <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="rounded-lg border border-border bg-bg-soft p-3">
                 <p className="text-xs text-ink-dim">Your bonus (30%)</p>

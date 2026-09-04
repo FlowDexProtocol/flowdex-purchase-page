@@ -42,13 +42,13 @@ export default function Footer({ cmsGlobal = {} }: { cmsGlobal?: CmsPageData }) 
                 <img
                   src={logoImageUrl}
                   alt={`${logoMain}${logoAccent}`}
-                  className="h-6 w-auto object-contain"
+                  className="h-8 w-auto object-contain"
                   onError={() => setLogoImageFailed(true)}
                 />
               ) : (
                 <>
-                  <span className="text-base font-bold text-ink">{logoMain}</span>
-                  <span className="text-base font-bold text-primary">{logoAccent}</span>
+                  <span className="text-2xl font-bold text-ink">{logoMain}</span>
+                  <span className="text-2xl font-bold text-primary">{logoAccent}</span>
                 </>
               )}
             </div>

@@ -3,12 +3,15 @@
 :root {
   --color-bg: #060d18;
   --color-bg-soft: #081222;
-  --color-card: #0b1f3a;
-  --color-card-hover: #0e274a;
-  --color-border: #16294a;
+  --color-card: #0b1a2e;
+  --color-card-hover: #11253f;
+  --color-border: #1a2a3f;
   --color-ink: #e8ecf1;
-  --color-ink-dim: #8ca0be;
-  --color-ink-faint: #5b6f8c;
+  /* Spec defines a single muted tone (#8899AA) used for both "secondary"
+     and "caption" text, distinguished by size, not color — collapses the
+     previous 3-tier ink/ink-dim/ink-faint fade into 2 tiers. */
+  --color-ink-dim: #8899aa;
+  --color-ink-faint: #8899aa;
   --color-primary: #627eea;
   --color-primary-dim: rgba(98, 126, 234, 0.14);
   --color-green: #00ff88;

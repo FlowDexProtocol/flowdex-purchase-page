@@ -44,7 +44,11 @@ export function SectionHeading({
 
 export function Card({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`rounded-2xl border border-border bg-card p-5 sm:p-6 ${className}`}>{children}</div>
+    <div
+      className={`rounded-xl border border-border bg-card p-6 transition-[border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-primary/60 ${className}`}
+    >
+      {children}
+    </div>
   );
 }
 
@@ -60,7 +64,7 @@ export function Mono({
   );
 }
 
-type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
+type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
 
 export function Button({
   variant = 'primary',
@@ -69,10 +73,15 @@ export function Button({
   ...rest
 }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: ButtonVariant }) {
   const base =
-    'inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed';
+    'inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-6 py-3 text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed';
   const variants: Record<ButtonVariant, string> = {
+    // Dark text on the blue fill (not literal white) — deliberately kept:
+    // this is the established convention across every FlowDex frontend
+    // this session (better contrast on a mid-tone #627EEA than white text),
+    // and flagged in the audit report rather than changed unilaterally.
     primary: 'bg-primary text-[#03131a] hover:bg-primary/90',
     secondary: 'bg-card-hover text-ink border border-border hover:border-primary/50',
+    outline: 'bg-transparent text-primary border border-primary hover:bg-primary-dim',
     ghost: 'text-ink-dim hover:text-ink hover:bg-white/5',
     danger: 'bg-red text-white hover:bg-red/90',
   };
@@ -188,7 +197,7 @@ export function VestingTimeline({
           />
         )}
       </div>
-      <div className="mt-2 grid grid-cols-4 gap-1 text-center text-[11px] leading-tight text-ink-faint">
+      <div className="mt-2 grid grid-cols-4 gap-1 text-center text-xs leading-tight text-ink-faint">
         <div>
           <span className={`block font-semibold ${grayed ? 'text-ink-faint' : 'text-primary'}`}>TGE {tgePct}%</span>
           Instant

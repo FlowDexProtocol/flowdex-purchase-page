@@ -156,7 +156,7 @@ export default function ReferralTab() {
       </div>
 
       <Card>
-        <p className="mb-4 text-sm font-semibold text-ink">Earnings</p>
+        <p className="mb-4 text-lg font-semibold text-ink">Earnings</p>
         {list.length === 0 ? (
           <EmptyState>No referrals yet — share your code to start earning.</EmptyState>
         ) : (
@@ -207,7 +207,7 @@ export default function ReferralTab() {
       </Card>
 
       <Card>
-        <p className="text-sm font-semibold text-ink">Token Burn Summary</p>
+        <p className="text-lg font-semibold text-ink">Token Burn Summary</p>
         <p className="mt-2 text-sm text-ink-dim">
           Total tokens burned from your referrals:{' '}
           <Mono className="font-semibold text-ink">{formatTokenAmount(stats?.total_tokens_burned ?? 0)}</Mono> $FDP 🔥
@@ -216,7 +216,7 @@ export default function ReferralTab() {
       </Card>
 
       <Card>
-        <p className="text-sm font-semibold text-ink">Terminal Credits</p>
+        <p className="text-lg font-semibold text-ink">Terminal Credits</p>
         <Mono className="mt-2 block text-2xl font-bold text-purple">{formatUSD(credits?.total_credits ?? 0)}</Mono>
         <div className="mt-3 space-y-1 text-xs">
           <p className="text-ink-dim">

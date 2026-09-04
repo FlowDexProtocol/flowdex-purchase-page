@@ -149,7 +149,7 @@ export default function PortfolioTab() {
 
       {vesting && (
         <Card>
-          <p className="text-sm font-semibold text-ink">Vesting Summary</p>
+          <p className="text-lg font-semibold text-ink">Vesting Summary</p>
           <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3">
             <div>
               <p className="text-xs text-ink-dim">Purchased tokens</p>
@@ -194,7 +194,7 @@ export default function PortfolioTab() {
       )}
 
       <Card>
-        <p className="mb-4 text-sm font-semibold text-ink">Purchase History</p>
+        <p className="mb-4 text-lg font-semibold text-ink">Purchase History</p>
         {downloadError && (
           <div className="mb-4">
             <ErrorNote>{downloadError}</ErrorNote>

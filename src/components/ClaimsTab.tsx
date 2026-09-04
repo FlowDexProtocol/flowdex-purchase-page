@@ -162,7 +162,7 @@ function TierClaimCard({
   if (!tier) {
     return (
       <Card>
-        <p className="font-semibold text-ink">{tierName}</p>
+        <p className="text-lg font-semibold text-ink">{tierName}</p>
         <p className="mt-2 text-sm text-ink-dim">Loading tier details…</p>
       </Card>
     );
@@ -177,7 +177,7 @@ function TierClaimCard({
     const tgeTokens = totalTokens * (tgePct / 100);
     return (
       <Card>
-        <p className="font-semibold text-ink">{tierName}</p>
+        <p className="text-lg font-semibold text-ink">{tierName}</p>
         <p className="mt-2 text-sm text-ink-dim">
           Your tokens: <Mono className="font-semibold text-ink">{formatTokenAmount(totalTokens)}</Mono> $FDP
         </p>
@@ -202,7 +202,7 @@ function TierClaimCard({
   if (!claim) {
     return (
       <Card>
-        <p className="font-semibold text-ink">{tierName}</p>
+        <p className="text-lg font-semibold text-ink">{tierName}</p>
         <Badge tone="neutral" className="mt-2">
           Generating claims
         </Badge>
@@ -222,7 +222,7 @@ function TierClaimCard({
     return (
       <Card>
         <div className="flex flex-wrap items-center gap-2">
-          <p className="font-semibold text-ink">{tierName}</p>
+          <p className="text-lg font-semibold text-ink">{tierName}</p>
           <Badge tone="green">CLAIMABLE</Badge>
         </div>
         <Mono className="mt-3 block text-3xl font-extrabold text-green">{formatTokenAmount(tgeTokens)} $FDP</Mono>
@@ -268,7 +268,7 @@ function TierClaimCard({
     return (
       <Card>
         <div className="flex flex-wrap items-center gap-2">
-          <p className="font-semibold text-ink">{tierName}</p>
+          <p className="text-lg font-semibold text-ink">{tierName}</p>
           <Badge tone="amber">FULLY UNLOCKED</Badge>
         </div>
         <p className="mt-3 text-sm text-ink-dim">
@@ -281,7 +281,7 @@ function TierClaimCard({
   return (
     <Card>
       <div className="flex flex-wrap items-center gap-2">
-        <p className="font-semibold text-ink">{tierName}</p>
+        <p className="text-lg font-semibold text-ink">{tierName}</p>
         <Badge tone="neutral">✓ CLAIMED</Badge>
       </div>
       <p className="mt-2 text-sm text-green">

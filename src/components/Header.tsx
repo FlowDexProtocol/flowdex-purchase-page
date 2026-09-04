@@ -31,7 +31,7 @@ function AccountMenu() {
 
   if (!isConnected || !address) {
     return (
-      <Button onClick={openConnectModal} disabled={isConnecting}>
+      <Button variant="outline" onClick={openConnectModal} disabled={isConnecting}>
         {isConnecting ? 'Connecting…' : 'Connect Wallet'}
       </Button>
     );
@@ -95,8 +95,8 @@ export default function Header({ cmsGlobal = {} }: { cmsGlobal?: CmsPageData }) 
             />
           ) : (
             <>
-              <span className="text-lg font-bold text-ink">{logoMain}</span>
-              <span className="text-lg font-bold text-primary">{logoAccent}</span>
+              <span className="text-xl font-bold text-ink sm:text-2xl">{logoMain}</span>
+              <span className="text-xl font-bold text-primary sm:text-2xl">{logoAccent}</span>
             </>
           )}
         </a>

@@ -13,6 +13,7 @@ const NAV_LINKS = [
   { href: '#scenarios', label: 'Scenarios' },
   { href: '#staking', label: 'Staking' },
   { href: '#tiers', label: 'Tiers' },
+  { href: '/status', label: 'Status' },
 ];
 
 function AccountMenu() {

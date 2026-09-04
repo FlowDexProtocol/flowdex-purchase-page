@@ -43,6 +43,9 @@ export interface PriceResponse {
   crypto: string;
   usd_price: number;
   updated_at: string;
+  // true once the price is over 5 minutes old (still under the backend's
+  // 15-minute stale-price cutoff, past which /api/price/:crypto 503s instead).
+  is_delayed: boolean;
 }
 
 export interface PurchaseStatusResponse {

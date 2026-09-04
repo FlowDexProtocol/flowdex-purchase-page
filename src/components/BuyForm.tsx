@@ -64,6 +64,7 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {} }: { cmsBuy?: CmsP
   const [price, setPrice] = useState<number | null>(null);
   const [priceLoading, setPriceLoading] = useState(false);
   const [priceError, setPriceError] = useState<string | null>(null);
+  const [priceDelayed, setPriceDelayed] = useState(false);
 
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -92,7 +93,10 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {} }: { cmsBuy?: CmsP
     setPriceError(null);
     getPrice(method.crypto)
       .then((res) => {
-        if (!cancelled) setPrice(res.usd_price);
+        if (!cancelled) {
+          setPrice(res.usd_price);
+          setPriceDelayed(res.is_delayed);
+        }
       })
       .catch((err) => {
         if (!cancelled) setPriceError(err instanceof Error ? err.message : 'Price unavailable');
@@ -103,7 +107,12 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {} }: { cmsBuy?: CmsP
 
     const id = setInterval(() => {
       getPrice(method.crypto)
-        .then((res) => !cancelled && setPrice(res.usd_price))
+        .then((res) => {
+          if (!cancelled) {
+            setPrice(res.usd_price);
+            setPriceDelayed(res.is_delayed);
+          }
+        })
         .catch(() => {});
     }, 20000);
 
@@ -351,6 +360,11 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {} }: { cmsBuy?: CmsP
               {tierPrice > 0 && <Mono className="mt-0.5 block text-xs text-ink-faint">at {formatTokenPrice(tierPrice)}/token</Mono>}
             </div>
           </div>
+          {price !== null && !priceLoading && priceDelayed && (
+            <p className="mt-2 rounded-lg bg-amber-dim px-3 py-2 text-xs text-amber">
+              Prices may be delayed.
+            </p>
+          )}
 
           <div className="mt-4">
             <label htmlFor="referral" className="mb-1.5 block text-xs font-semibold uppercase tracking-widest text-ink-dim">

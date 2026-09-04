@@ -93,6 +93,7 @@ export interface PurchaseIntentPayload {
   crypto: string;
   usd_amount: number;
   referral_code?: string;
+  email?: string;
 }
 export const postPurchaseIntent = (payload: PurchaseIntentPayload) =>
   request<PurchaseIntentResponse>('/api/purchases/intent', { method: 'POST', body: payload });

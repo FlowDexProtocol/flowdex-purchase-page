@@ -30,6 +30,7 @@ const MIN_USD = 10;
 const MAX_USD = 10_000_000;
 const INTENT_WINDOW_MS = 15 * 60 * 1000;
 const REFERRAL_CODE_RE = /^FDX-[A-Z0-9]{4}-[A-Z0-9]{4}$/;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const GAS_FEE_NOTES: Record<PaymentMethodKey, string> = {
   ETH: 'Note: Network gas fees of approximately $2-15 apply on top of this amount.',
@@ -77,6 +78,10 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {} }: { cmsBuy?: CmsP
   const [referralInput, setReferralInput] = useState('');
   const referralSeededRef = useRef(false);
   const referralAppliedRef = useRef<string | null>(null);
+
+  const [emailInput, setEmailInput] = useState('');
+  const [emailTouched, setEmailTouched] = useState(false);
+  const emailValid = emailInput.trim() === '' || EMAIL_RE.test(emailInput.trim());
 
   const method = useMemo(() => PAYMENT_METHODS.find((m) => m.key === methodKey)!, [methodKey]);
   const usdNumber = parseFloat(usdAmount) || 0;
@@ -176,12 +181,15 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {} }: { cmsBuy?: CmsP
     setSubmitting(true);
     setSubmitError(null);
     try {
+      const trimmedEmail = emailInput.trim();
+      const validEmail = trimmedEmail !== '' && EMAIL_RE.test(trimmedEmail) ? trimmedEmail : null;
       const res = await postPurchaseIntent({
         buyer_wallet: address!,
         chain: method.chain,
         crypto: method.crypto,
         usd_amount: usdNumber,
         ...(effectiveReferralCode ? { referral_code: effectiveReferralCode } : {}),
+        ...(validEmail ? { email: validEmail } : {}),
       });
       setIntent(res);
       setIntentUsdAmount(usdNumber);
@@ -375,6 +383,23 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {} }: { cmsBuy?: CmsP
             {referralValidation.state === 'self' && (
               <p className="mt-1.5 text-xs text-red">You cannot use your own referral code</p>
             )}
+          </div>
+
+          <div className="mt-4">
+            <label htmlFor="email" className="mb-1.5 block text-xs font-semibold uppercase tracking-widest text-ink-dim">
+              Email for receipt (optional)
+            </label>
+            <p className="mb-1.5 text-xs text-ink-faint">We&rsquo;ll send you a confirmation email when your purchase is confirmed</p>
+            <input
+              id="email"
+              type="email"
+              value={emailInput}
+              onChange={(e) => setEmailInput(e.target.value)}
+              onBlur={() => setEmailTouched(true)}
+              placeholder="your@email.com"
+              className="w-full rounded-lg border border-border bg-bg-soft px-3 py-2.5 text-sm text-ink outline-none focus:border-primary/60"
+            />
+            {emailTouched && !emailValid && <p className="mt-1.5 text-xs text-red">Enter a valid email address</p>}
           </div>
 
           <Button

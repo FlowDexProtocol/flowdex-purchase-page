@@ -11,6 +11,7 @@ import { PAYMENT_METHODS, type PaymentMethodKey } from '@/lib/types';
 import { formatCrypto, formatDuration, formatTokenPrice, formatTokenAmount, formatUSD, toNum } from '@/lib/format';
 import { cms, type CmsPageData } from '@/lib/cms';
 import { Badge, Button, Card, CopyButton, ErrorNote, Mono, Section, SectionHeading, Spinner, VestingTimeline } from './ui';
+import { PaymentMethodIcon } from './CoinIcons';
 import type { PurchaseIntentResponse, TierCurrent } from '@/lib/types';
 
 // Referral bonus split — mirrors the published referral program terms
@@ -305,20 +306,22 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {} }: { cmsBuy?: CmsP
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
         <Card className="lg:col-span-3">
           <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-ink-dim">Pay with</label>
-          <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-            {PAYMENT_METHODS.map((m) => (
-              <button
-                key={m.key}
-                onClick={() => setMethodKey(m.key)}
-                className={`min-h-11 rounded-lg border px-2 py-2.5 text-xs sm:px-3 sm:text-sm font-semibold transition-colors ${
-                  methodKey === m.key
-                    ? 'border-primary bg-primary-dim text-primary'
-                    : 'border-border text-ink-dim hover:text-ink hover:border-primary/40'
-                }`}
-              >
-                {m.label}
-              </button>
-            ))}
+          <div className="grid grid-cols-4 gap-2 lg:grid-cols-7">
+            {PAYMENT_METHODS.map((m) => {
+              const selected = methodKey === m.key;
+              return (
+                <button
+                  key={m.key}
+                  onClick={() => setMethodKey(m.key)}
+                  className={`flex min-h-11 items-center justify-center gap-1.5 rounded-lg border px-2 py-2.5 text-xs font-semibold transition-colors ${
+                    selected ? 'border-primary bg-primary text-white' : 'border-border bg-card text-ink hover:border-primary'
+                  }`}
+                >
+                  <PaymentMethodIcon methodKey={m.key} selected={selected} />
+                  <span className="truncate">{m.label}</span>
+                </button>
+              );
+            })}
           </div>
 
           <label htmlFor="usd" className="mb-2 mt-6 block text-xs font-semibold uppercase tracking-widest text-ink-dim">

@@ -39,6 +39,16 @@ export interface TierCurrent {
   message?: string;
 }
 
+export type PurchaseWatchStatus = 'pending' | 'detected' | 'confirmed' | 'expired';
+
+export interface PurchaseWatchResponse {
+  status: PurchaseWatchStatus;
+  usd_value: number | null;
+  tokens_allocated: number | null;
+  tier_name: string | null;
+  created_at: string;
+}
+
 export interface PriceResponse {
   crypto: string;
   usd_price: number;
@@ -94,7 +104,8 @@ export interface PurchaseIntentResponse {
 export interface WalletConnectResponse {
   success: boolean;
   token: string;
-  expires_in: string;
+  /** Seconds until the JWT expires (e.g. 1200 for 20 minutes). */
+  expires_in: number;
   wallet: string;
   referral_code: string;
   is_new_buyer: boolean;

@@ -13,6 +13,7 @@ import type {
   PurchaseIntentResponse,
   PurchaseReceipt,
   PurchaseStatusResponse,
+  PurchaseWatchResponse,
   PublicStats,
   ReferralCredits,
   ReferralStats,
@@ -104,6 +105,11 @@ export const postPurchaseIntent = (payload: PurchaseIntentPayload) =>
 export const getPurchaseStatus = (txHash: string) =>
   request<PurchaseStatusResponse>(`/api/purchases/status/${encodeURIComponent(txHash)}`);
 
+// GET /api/purchase/watch/:intent_id, public, no auth. Polled every 5
+// seconds while a purchase intent is awaiting payment/confirmation.
+export const getPurchaseWatch = (intentId: number) =>
+  request<PurchaseWatchResponse>(`/api/purchase/watch/${intentId}`);
+
 // ── Wallet ──
 export interface WalletConnectPayload {
   wallet_address: string;
@@ -117,7 +123,7 @@ export const disconnectWalletSession = (token: string) =>
   request<{ success: boolean; message: string }>('/api/wallet/disconnect', { method: 'POST', token });
 
 export const refreshWalletSession = (token: string) =>
-  request<{ success: boolean; wallet: string; expires_in: string }>('/api/wallet/refresh', { method: 'POST', token });
+  request<{ success: boolean; wallet: string; expires_in: number }>('/api/wallet/refresh', { method: 'POST', token });
 
 // ── Buyer (requires Bearer session token) ──
 export const getBuyerProfile = (wallet: string, token: string) =>
@@ -165,3 +171,12 @@ export const getPublicLeaders = (limit = 10) =>
 export const getPublicScenarios = () => request<ScenariosResponse>('/api/public/scenarios');
 export const getPublicStaking = () => request<StakingInfo>('/api/public/staking');
 export const getPublicStats = () => request<PublicStats>('/api/public/stats');
+
+// POST /api/subscribe — { email, wallet_address? }. wallet_address links the
+// subscription to the connected wallet so getSubscriptionStatus can find it.
+export const postSubscribe = (payload: { email: string; wallet_address?: string }) =>
+  request<{ success: boolean; message?: string; error?: string }>('/api/subscribe', { method: 'POST', body: payload });
+
+// GET /api/buyer/:wallet/subscription — requires the buyer session token
+export const getSubscriptionStatus = (wallet: string, token: string) =>
+  request<{ subscribed: boolean; email: string | null }>(`/api/buyer/${wallet}/subscription`, { token });

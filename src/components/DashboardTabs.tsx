@@ -5,6 +5,7 @@ import { useWallet } from '@/context/wallet-context';
 import PortfolioTab from './PortfolioTab';
 import ReferralTab from './ReferralTab';
 import ClaimsTab from './ClaimsTab';
+import EmailCaptureBanner from './EmailCaptureBanner';
 import { Button, Card, Section, SectionHeading } from './ui';
 
 const TABS = [
@@ -36,6 +37,8 @@ export default function DashboardTabs() {
         </Card>
       ) : (
         <div>
+          <EmailCaptureBanner />
+
           <div className="mb-6 flex gap-1 overflow-x-auto rounded-lg border border-border bg-card p-1 sm:w-fit">
             {TABS.map((t) => (
               <button

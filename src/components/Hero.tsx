@@ -4,6 +4,7 @@ import { useTierCurrent } from '@/lib/hooks';
 import { formatCompactUSD, formatPercentage, formatTokenPrice } from '@/lib/format';
 import { cms, type CmsPageData } from '@/lib/cms';
 import { Badge, Container, Mono, ProgressBar, Spinner } from './ui';
+import WalletsConnectedCounter from './WalletsConnectedCounter';
 
 export default function Hero({ cmsBuy = {} }: { cmsBuy?: CmsPageData }) {
   const { data: tier, loading } = useTierCurrent();
@@ -83,6 +84,7 @@ export default function Hero({ cmsBuy = {} }: { cmsBuy?: CmsPageData }) {
               </a>
             </div>
           ) : null}
+          <WalletsConnectedCounter className="mt-4" />
         </div>
       </Container>
     </div>

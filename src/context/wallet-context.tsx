@@ -3,9 +3,12 @@
 // Wallet connection + buyer session state.
 //
 // - Token lives only in React state (memory) — never localStorage.
-// - Backend session is 30 minutes and requires NO signature to renew
-//   ("connection IS authentication"), so on expiry we silently replay
-//   POST /api/wallet/connect for the still-connected address.
+// - The backend session is a hard 20-minute window from connection time
+//   (its own expires_in in the connect response is the source of truth,
+//   not a hardcoded frontend guess). It is NOT extended by user activity —
+//   a warning banner shows at 2 minutes remaining, and at 0 the token is
+//   cleared and the user must explicitly reconnect (no signature needed,
+//   "connection IS authentication", but it's no longer done silently).
 // - A `?ref=FDX-XXXX-XXXX` URL param is auto-applied once per wallet.
 // ══════════════════════════════════════════════════
 
@@ -27,7 +30,8 @@ import { ApiError, applyReferral, connectWallet as apiConnectWallet } from '@/li
 import { CHAINS } from '@/lib/web3modal';
 import type { WalletConnectResponse } from '@/lib/types';
 
-const SESSION_MS = 30 * 60 * 1000;
+// How long before the real expiry to show the "session expiring" banner.
+const SESSION_WARNING_MS = 2 * 60 * 1000;
 
 interface WalletContextValue {
   address: string | null;
@@ -45,9 +49,14 @@ interface WalletContextValue {
   terminalCredits: number;
   pendingClaims: WalletConnectResponse['pending_claims'];
   error: string | null;
+  /** True in the last 2 minutes before the session hard-expires. */
+  sessionWarning: boolean;
+  /** True once the 20-minute session has expired — token has been cleared. */
+  sessionExpired: boolean;
   openConnectModal: () => void;
   disconnectWallet: () => Promise<void>;
-  refreshSession: () => Promise<void>;
+  /** Re-authenticates the still-connected wallet after the session expired. */
+  reconnectSession: () => Promise<void>;
   authedFetch: <T>(fn: (token: string) => Promise<T>) => Promise<T>;
 }
 
@@ -70,14 +79,20 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [pendingClaims, setPendingClaims] = useState<WalletConnectResponse['pending_claims']>([]);
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [sessionWarning, setSessionWarning] = useState(false);
+  const [sessionExpired, setSessionExpired] = useState(false);
 
-  const sessionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const warningTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const expiryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const connectedWalletRef = useRef<string | null>(null);
   const referralAppliedRef = useRef<Set<string>>(new Set());
-  // Holds the latest `doConnect` so the session-expiry timer (scheduled from
-  // inside `doConnect` itself, below) can call the current closure without
-  // referencing `doConnect` before it's declared.
-  const doConnectRef = useRef<(addr: string, cid?: number) => Promise<string | null>>(null);
+
+  const clearSessionTimers = useCallback(() => {
+    if (warningTimer.current) clearTimeout(warningTimer.current);
+    if (expiryTimer.current) clearTimeout(expiryTimer.current);
+    warningTimer.current = null;
+    expiryTimer.current = null;
+  }, []);
 
   const doConnect = useCallback(async (addr: string, cid?: number): Promise<string | null> => {
     setIsConnecting(true);
@@ -92,10 +107,19 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       setPendingClaims(res.pending_claims);
       connectedWalletRef.current = addr;
 
-      if (sessionTimer.current) clearTimeout(sessionTimer.current);
-      sessionTimer.current = setTimeout(() => {
-        doConnectRef.current?.(addr, cid);
-      }, SESSION_MS);
+      // Hard 20-minute window from THIS connection — never extended by
+      // activity. expires_in (seconds) comes from the backend, not a
+      // hardcoded frontend value, so it always matches the real JWT TTL.
+      setSessionWarning(false);
+      setSessionExpired(false);
+      clearSessionTimers();
+      const ttlMs = res.expires_in * 1000;
+      warningTimer.current = setTimeout(() => setSessionWarning(true), Math.max(0, ttlMs - SESSION_WARNING_MS));
+      expiryTimer.current = setTimeout(() => {
+        setToken(null);
+        setSessionWarning(false);
+        setSessionExpired(true);
+      }, ttlMs);
 
       if (typeof window !== 'undefined') {
         const rawRef = new URLSearchParams(window.location.search).get('ref');
@@ -128,11 +152,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsConnecting(false);
     }
-  }, []);
-
-  useEffect(() => {
-    doConnectRef.current = doConnect;
-  }, [doConnect]);
+  }, [clearSessionTimers]);
 
   useEffect(() => {
     if (isConnected && address && connectedWalletRef.current !== address) {
@@ -146,15 +166,15 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       setSummary(null);
       setTerminalCredits(0);
       setPendingClaims([]);
-      if (sessionTimer.current) clearTimeout(sessionTimer.current);
+      setSessionWarning(false);
+      setSessionExpired(false);
+      clearSessionTimers();
     }
-  }, [isConnected, address, chainId, doConnect]);
+  }, [isConnected, address, chainId, doConnect, clearSessionTimers]);
 
   useEffect(() => {
-    return () => {
-      if (sessionTimer.current) clearTimeout(sessionTimer.current);
-    };
-  }, []);
+    return () => clearSessionTimers();
+  }, [clearSessionTimers]);
 
   // Informational-only chain detection — never blocks or prompts a switch.
   // Re-runs whenever the wallet reports a different chainId (i.e. the user
@@ -183,7 +203,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   }, [isConnected, walletProvider, chainId]);
 
   const disconnectWallet = useCallback(async () => {
-    if (sessionTimer.current) clearTimeout(sessionTimer.current);
+    clearSessionTimers();
     connectedWalletRef.current = null;
     setToken(null);
     setReferralCode(null);
@@ -191,35 +211,45 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     setSummary(null);
     setTerminalCredits(0);
     setPendingClaims([]);
+    setSessionWarning(false);
+    setSessionExpired(false);
     await disconnect();
-  }, [disconnect]);
+  }, [disconnect, clearSessionTimers]);
 
-  const refreshSession = useCallback(async () => {
-    if (address) await doConnect(address, chainId);
-  }, [address, chainId, doConnect]);
+  // Re-authenticates the still-connected wallet after the session hard-
+  // expired — no signature needed, but (unlike the old behavior) this only
+  // ever runs from an explicit user action, never silently on a timer.
+  const reconnectSession = useCallback(async () => {
+    if (address) {
+      await doConnect(address, chainId);
+    } else {
+      open();
+    }
+  }, [address, chainId, doConnect, open]);
 
-  // Runs an authenticated request; on a 401 (session expired/timed out) it
-  // silently reconnects (no signature needed) and retries once.
+  // Runs an authenticated request. No silent reconnect on a 401 or a
+  // missing token — either one means the session is expired, so this
+  // surfaces that state (for the expired banner + reconnect button) and
+  // rejects, rather than quietly re-authenticating behind the user's back.
   const authedFetch = useCallback(
     async <T,>(fn: (token: string) => Promise<T>): Promise<T> => {
-      if (!address) throw new Error('Wallet not connected');
-      if (!token) {
-        const newToken = await doConnect(address, chainId);
-        if (!newToken) throw new Error('Wallet session unavailable');
-        return fn(newToken);
+      if (!address || !token) {
+        setSessionExpired(true);
+        throw new Error('Wallet session expired. Please reconnect your wallet.');
       }
       try {
         return await fn(token);
       } catch (err) {
         if (err instanceof ApiError && err.status === 401) {
-          const newToken = await doConnect(address, chainId);
-          if (!newToken) throw err;
-          return fn(newToken);
+          clearSessionTimers();
+          setToken(null);
+          setSessionWarning(false);
+          setSessionExpired(true);
         }
         throw err;
       }
     },
-    [token, address, chainId, doConnect]
+    [token, address, clearSessionTimers]
   );
 
   const value = useMemo<WalletContextValue>(
@@ -237,11 +267,13 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       terminalCredits,
       pendingClaims,
       error,
+      sessionWarning,
+      sessionExpired,
       openConnectModal: () => {
         open();
       },
       disconnectWallet,
-      refreshSession,
+      reconnectSession,
       authedFetch,
     }),
     [
@@ -258,9 +290,11 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       terminalCredits,
       pendingClaims,
       error,
+      sessionWarning,
+      sessionExpired,
       open,
       disconnectWallet,
-      refreshSession,
+      reconnectSession,
       authedFetch,
     ]
   );

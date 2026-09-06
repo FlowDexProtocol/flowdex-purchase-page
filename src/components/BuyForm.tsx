@@ -5,14 +5,16 @@ import QRCode from 'react-qr-code';
 import { useWeb3ModalProvider } from '@web3modal/ethers/react';
 import { useWallet } from '@/context/wallet-context';
 import { useTierCurrent } from '@/lib/hooks';
-import { ApiError, applyReferral, getPrice, postPurchaseIntent } from '@/lib/api';
+import { ApiError, applyReferral, getPrice, getPurchaseReceipt, getPurchaseWatch, postPurchaseIntent } from '@/lib/api';
 import { checkEvmBalance } from '@/lib/balance';
 import { PAYMENT_METHODS, type PaymentMethodKey } from '@/lib/types';
 import { formatCrypto, formatDuration, formatTokenPrice, formatTokenAmount, formatUSD, toNum } from '@/lib/format';
+import { downloadReceiptPdf } from '@/lib/receipt';
 import { cms, type CmsPageData } from '@/lib/cms';
 import { Badge, Button, Card, CopyButton, ErrorNote, Mono, Section, SectionHeading, Spinner, VestingTimeline } from './ui';
 import { PaymentMethodIcon } from './CoinIcons';
-import type { PurchaseIntentResponse, TierCurrent } from '@/lib/types';
+import PurchaseStepper from './PurchaseStepper';
+import type { PurchaseIntentResponse, PurchaseWatchResponse, TierCurrent } from '@/lib/types';
 
 // Referral bonus split — mirrors the published referral program terms
 // (also reflected in FaqSection/ReferralSection/ReferralTab copy):
@@ -56,7 +58,7 @@ function resolveGasNote(cmsBuy: CmsPageData, key: PaymentMethodKey): string {
 }
 
 export default function BuyForm({ cmsBuy = {}, cmsGlobal = {} }: { cmsBuy?: CmsPageData; cmsGlobal?: CmsPageData }) {
-  const { address, isConnected, openConnectModal, referralCode, referredByCode } = useWallet();
+  const { address, isConnected, openConnectModal, referralCode, referredByCode, authedFetch } = useWallet();
   const { walletProvider } = useWeb3ModalProvider();
   const { data: tier } = useTierCurrent();
 
@@ -76,6 +78,9 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {} }: { cmsBuy?: CmsP
   const [remainingMs, setRemainingMs] = useState(0);
   const [checkingBalance, setCheckingBalance] = useState(false);
   const [balanceWarning, setBalanceWarning] = useState<{ balance: number; required: number; symbol: string } | null>(null);
+  const [watchResult, setWatchResult] = useState<PurchaseWatchResponse | null>(null);
+  const [downloadingReceipt, setDownloadingReceipt] = useState(false);
+  const [receiptError, setReceiptError] = useState<string | null>(null);
 
   const [referralInput, setReferralInput] = useState('');
   const referralSeededRef = useRef(false);
@@ -132,6 +137,55 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {} }: { cmsBuy?: CmsP
     setRemainingMs(INTENT_WINDOW_MS);
     return () => clearInterval(id);
   }, [intent]);
+
+  // Polls GET /api/purchase/watch/:intent_id every 5s once payment
+  // instructions appear, so the stepper below reflects real on-chain
+  // progress. Stops once confirmed, or after 20 minutes either way.
+  useEffect(() => {
+    if (!intent) {
+      setWatchResult(null);
+      return;
+    }
+    setWatchResult(null);
+    let cancelled = false;
+    const deadline = Date.now() + 20 * 60 * 1000;
+
+    async function poll() {
+      if (cancelled) return;
+      try {
+        const res = await getPurchaseWatch(intent!.intent_id);
+        if (cancelled) return;
+        setWatchResult(res);
+        if (res.status === 'confirmed' || Date.now() > deadline) {
+          clearInterval(intervalId);
+        }
+      } catch {
+        // Transient network/API error — keep polling rather than giving up.
+      }
+    }
+
+    const intervalId = setInterval(poll, 5000);
+    poll();
+
+    return () => {
+      cancelled = true;
+      clearInterval(intervalId);
+    };
+  }, [intent]);
+
+  async function handleDownloadReceipt() {
+    if (!address || !intent) return;
+    setDownloadingReceipt(true);
+    setReceiptError(null);
+    try {
+      const receipt = await authedFetch((token) => getPurchaseReceipt(address, intent.intent_id, token));
+      downloadReceiptPdf(receipt);
+    } catch (err) {
+      setReceiptError(err instanceof ApiError ? err.message : 'Failed to generate receipt. Please try again.');
+    } finally {
+      setDownloadingReceipt(false);
+    }
+  }
 
   const cryptoEquivalent = price && usdNumber > 0 ? usdNumber / price : 0;
   const tierPrice = tier && !tier.message ? toNum(tier.price) : 0;
@@ -495,8 +549,61 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {} }: { cmsBuy?: CmsP
             <div className="mt-8 flex flex-col items-center justify-center gap-2 text-center text-sm text-ink-faint">
               <p>Submit a purchase to generate a deposit address and locked price.</p>
             </div>
+          ) : watchResult?.status === 'confirmed' ? (
+            <div className="mt-4 flex flex-col items-center gap-4 rounded-xl border border-green/30 bg-green-dim py-8 text-center shadow-[0_0_40px_rgba(0,255,136,0.15)]">
+              <span className="flex h-16 w-16 items-center justify-center rounded-full bg-green text-3xl font-bold text-[#03131a]">
+                ✓
+              </span>
+              <div>
+                <p className="text-lg font-bold text-ink">Purchase Confirmed!</p>
+                <p className="mt-1 text-sm text-ink-dim">
+                  {formatTokenAmount(watchResult.tokens_allocated ?? intent.tokens_estimated)} $FDP allocated to your wallet
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                <Button
+                  onClick={() => document.getElementById('dashboard')?.scrollIntoView({ behavior: 'smooth' })}
+                >
+                  View in Portfolio
+                </Button>
+                <Button variant="secondary" onClick={handleDownloadReceipt} disabled={downloadingReceipt}>
+                  {downloadingReceipt ? (
+                    <>
+                      <Spinner className="h-4 w-4" /> Generating…
+                    </>
+                  ) : (
+                    'Download Receipt'
+                  )}
+                </Button>
+              </div>
+              {receiptError && (
+                <div className="w-full max-w-sm">
+                  <ErrorNote>{receiptError}</ErrorNote>
+                </div>
+              )}
+            </div>
+          ) : watchResult?.status === 'expired' ? (
+            <div className="mt-4 space-y-3 rounded-xl border border-red/30 bg-red-dim p-5 text-center">
+              <p className="text-sm font-semibold text-red">Time expired</p>
+              <p className="text-xs leading-relaxed text-ink-dim">
+                If you already sent payment, don&rsquo;t worry — late payments are still processed. Check the{' '}
+                <a href="/status" className="font-medium text-primary hover:underline">
+                  Status page
+                </a>{' '}
+                or contact support.
+              </p>
+            </div>
           ) : (
             <div className="mt-4 space-y-4">
+              <PurchaseStepper status={watchResult?.status ?? 'pending'} />
+
+              {watchResult?.status === 'detected' && (
+                <div className="flex items-center gap-2 rounded-lg border border-primary/30 bg-primary-dim px-3 py-2 text-xs text-primary">
+                  <Spinner className="h-3.5 w-3.5" />
+                  Payment detected! Confirming...
+                </div>
+              )}
+
               <div className="flex items-center justify-between">
                 <Badge tone={remainingMs > 0 ? 'green' : 'red'}>
                   {remainingMs > 0 ? `Expires in ${formatDuration(remainingMs)}` : 'Expired — start a new purchase'}

@@ -7,8 +7,8 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { getTierCurrent } from './api';
-import type { TierCurrent } from './types';
+import { getPublicStats, getTierCurrent } from './api';
+import type { PublicStats, TierCurrent } from './types';
 
 interface PollingResult<T> {
   data: T | null;
@@ -56,4 +56,8 @@ export function usePolling<T>(
 
 export function useTierCurrent() {
   return usePolling<TierCurrent>(getTierCurrent, 20000, []);
+}
+
+export function usePublicStats() {
+  return usePolling<PublicStats>(getPublicStats, 30000, []);
 }

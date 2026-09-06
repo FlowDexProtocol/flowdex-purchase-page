@@ -86,6 +86,15 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const expiryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const connectedWalletRef = useRef<string | null>(null);
   const referralAppliedRef = useRef<Set<string>>(new Set());
+  // Tracks whether a real backend session has ever been established for the
+  // currently-connected wallet. Several components (EmailCaptureBanner,
+  // PortfolioTab, ClaimsTab) call authedFetch as soon as `address` is set —
+  // which happens the instant the wallet connects, BEFORE the async
+  // POST /api/wallet/connect call below has resolved and set `token`. Without
+  // this flag, authedFetch couldn't tell "no session yet, still connecting"
+  // (harmless) from "had a session, now it's gone" (a real expiry) and would
+  // flash the "Session expired" banner on every single connect.
+  const hasSessionRef = useRef(false);
 
   const clearSessionTimers = useCallback(() => {
     if (warningTimer.current) clearTimeout(warningTimer.current);
@@ -106,6 +115,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       setTerminalCredits(res.terminal_credits);
       setPendingClaims(res.pending_claims);
       connectedWalletRef.current = addr;
+      hasSessionRef.current = true;
 
       // Hard 20-minute window from THIS connection — never extended by
       // activity. expires_in (seconds) comes from the backend, not a
@@ -160,6 +170,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }
     if (!isConnected && connectedWalletRef.current) {
       connectedWalletRef.current = null;
+      hasSessionRef.current = false;
       setToken(null);
       setReferralCode(null);
       setReferredByCode(null);
@@ -205,6 +216,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const disconnectWallet = useCallback(async () => {
     clearSessionTimers();
     connectedWalletRef.current = null;
+    hasSessionRef.current = false;
     setToken(null);
     setReferralCode(null);
     setReferredByCode(null);
@@ -228,14 +240,21 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   }, [address, chainId, doConnect, open]);
 
   // Runs an authenticated request. No silent reconnect on a 401 or a
-  // missing token — either one means the session is expired, so this
-  // surfaces that state (for the expired banner + reconnect button) and
-  // rejects, rather than quietly re-authenticating behind the user's back.
+  // missing token while a session HAD been established — that means the
+  // session is genuinely expired, so this surfaces that state (for the
+  // expired banner + reconnect button) and rejects, rather than quietly
+  // re-authenticating behind the user's back. But if no session has been
+  // established yet for this wallet (doConnect's connect call is still in
+  // flight — see hasSessionRef above), a missing token just means "not
+  // ready yet", not "expired" — don't show the expired banner for that.
   const authedFetch = useCallback(
     async <T,>(fn: (token: string) => Promise<T>): Promise<T> => {
       if (!address || !token) {
-        setSessionExpired(true);
-        throw new Error('Wallet session expired. Please reconnect your wallet.');
+        if (hasSessionRef.current) {
+          setSessionExpired(true);
+          throw new Error('Wallet session expired. Please reconnect your wallet.');
+        }
+        throw new Error('Wallet session not ready yet.');
       }
       try {
         return await fn(token);

@@ -1,15 +1,18 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { Container } from './ui';
 import { cms, type CmsPageData } from '@/lib/cms';
 
+// Absolute paths (not bare "#buy") so these work from any route — see the
+// same fix in Header.tsx's NAV_LINKS for why a bare hash breaks off-homepage.
 const LINKS = [
-  { label: 'Buy $FDP', href: '#buy' },
-  { label: 'Dashboard', href: '#dashboard' },
-  { label: 'Leaderboard', href: '#leaderboard' },
-  { label: 'Tiers', href: '#tiers' },
-  { label: 'Staking', href: '#staking' },
+  { label: 'Buy $FDP', href: '/#buy' },
+  { label: 'Dashboard', href: '/#dashboard' },
+  { label: 'Leaderboard', href: '/#leaderboard' },
+  { label: 'Tiers', href: '/#tiers' },
+  { label: 'Staking', href: '/#staking' },
   { label: 'Check Status', href: '/status' },
 ];
 
@@ -61,7 +64,7 @@ export default function Footer({ cmsGlobal = {} }: { cmsGlobal?: CmsPageData }) 
       <Container className="py-14 sm:py-16">
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr]">
           <div>
-            <a href="#top" className="flex items-center gap-0.5">
+            <Link href="/#top" className="flex items-center gap-0.5">
               {showLogoImage ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -76,7 +79,7 @@ export default function Footer({ cmsGlobal = {} }: { cmsGlobal?: CmsPageData }) 
                   <span className="text-xl font-bold text-primary sm:text-2xl">{logoAccent}</span>
                 </>
               )}
-            </a>
+            </Link>
             <p className="mt-3 max-w-[240px] text-sm text-ink-faint">
               {cms(cmsGlobal, 'site', 'tagline', 'Trade Everything. Know Everything.')}
             </p>
@@ -103,9 +106,9 @@ export default function Footer({ cmsGlobal = {} }: { cmsGlobal?: CmsPageData }) 
             <ul>
               {LINKS.map((l) => (
                 <li key={l.href}>
-                  <a href={l.href} className="flex min-h-11 items-center text-sm text-ink-faint transition-colors hover:text-ink">
+                  <Link href={l.href} className="flex min-h-11 items-center text-sm text-ink-faint transition-colors hover:text-ink">
                     {l.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>

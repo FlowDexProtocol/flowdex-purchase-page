@@ -1,18 +1,22 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { useWallet } from '@/context/wallet-context';
 import { Button, Mono } from './ui';
 import { truncateWallet } from '@/lib/format';
 import { cms, type CmsPageData } from '@/lib/cms';
 
+// Absolute paths (not bare "#buy") so these work from any route, not just
+// the homepage — a bare hash link clicked from e.g. /status just rewrites
+// the URL to /status#buy with no matching element, silently going nowhere.
 const NAV_LINKS = [
-  { href: '#buy', label: 'Buy' },
-  { href: '#dashboard', label: 'Dashboard' },
-  { href: '#leaderboard', label: 'Leaderboard' },
-  { href: '#scenarios', label: 'Scenarios' },
-  { href: '#staking', label: 'Staking' },
-  { href: '#tiers', label: 'Tiers' },
+  { href: '/#buy', label: 'Buy' },
+  { href: '/#dashboard', label: 'Dashboard' },
+  { href: '/#leaderboard', label: 'Leaderboard' },
+  { href: '/#scenarios', label: 'Scenarios' },
+  { href: '/#staking', label: 'Staking' },
+  { href: '/#tiers', label: 'Tiers' },
   { href: '/status', label: 'Status' },
 ];
 
@@ -84,7 +88,7 @@ export default function Header({ cmsGlobal = {} }: { cmsGlobal?: CmsPageData }) 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-bg/85 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-4 sm:px-6 lg:px-8">
-        <a href="#top" className="flex min-w-0 items-center gap-0.5 shrink-0">
+        <Link href="/#top" className="flex min-w-0 items-center gap-0.5 shrink-0">
           {showLogoImage ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -99,13 +103,13 @@ export default function Header({ cmsGlobal = {} }: { cmsGlobal?: CmsPageData }) 
               <span className="text-xl font-bold text-primary sm:text-2xl">{logoAccent}</span>
             </>
           )}
-        </a>
+        </Link>
 
         <nav className="hidden lg:flex items-center gap-6">
           {NAV_LINKS.map((link) => (
-            <a key={link.href} href={link.href} className="text-sm font-medium text-ink-dim hover:text-ink transition-colors">
+            <Link key={link.href} href={link.href} className="text-sm font-medium text-ink-dim hover:text-ink transition-colors">
               {link.label}
-            </a>
+            </Link>
           ))}
         </nav>
 

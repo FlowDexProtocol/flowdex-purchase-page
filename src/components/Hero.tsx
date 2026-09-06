@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useTierCurrent } from '@/lib/hooks';
 import { formatCompactUSD, formatPercentage, formatTokenPrice } from '@/lib/format';
 import { cms, type CmsPageData } from '@/lib/cms';
@@ -76,12 +77,12 @@ export default function Hero({ cmsBuy = {} }: { cmsBuy?: CmsPageData }) {
                 </p>
               )}
 
-              <a
-                href="#buy"
+              <Link
+                href="/#buy"
                 className="mt-5 flex w-full items-center justify-center rounded-lg bg-primary px-4 py-3 text-sm font-bold text-[#03131a] hover:bg-primary/90 transition-colors"
               >
                 Buy $FDP Now
-              </a>
+              </Link>
             </div>
           ) : null}
           <WalletsConnectedCounter className="mt-4" />

@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { useWallet } from '@/context/wallet-context';
 import { ApiError, getBuyerProfile, getBuyerPurchases, getClaims, getTiers, postClaim } from '@/lib/api';
 import type { Claim, Purchase, Tier } from '@/lib/types';
@@ -116,12 +117,12 @@ export default function ClaimsTab() {
     return (
       <EmptyState>
         <p>No purchases yet. Buy $FDP to see your vesting schedule and claims here.</p>
-        <a
-          href="#buy"
+        <Link
+          href="/#buy"
           className="mt-4 inline-flex min-h-11 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-[#03131a] hover:bg-primary/90 transition-colors"
         >
           Buy $FDP
-        </a>
+        </Link>
       </EmptyState>
     );
   }

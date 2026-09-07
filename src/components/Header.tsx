@@ -6,6 +6,7 @@ import { useWallet } from '@/context/wallet-context';
 import { Button, Mono } from './ui';
 import { truncateWallet } from '@/lib/format';
 import { cms, type CmsPageData } from '@/lib/cms';
+import { sanitizeImageUrl } from '@/lib/url-safety';
 
 // Absolute paths (not bare "#buy") so these work from any route, not just
 // the homepage — a bare hash link clicked from e.g. /status just rewrites
@@ -79,7 +80,7 @@ function AccountMenu() {
 
 export default function Header({ cmsGlobal = {} }: { cmsGlobal?: CmsPageData }) {
   const logoType = cms(cmsGlobal, 'logo', 'type', 'text');
-  const logoImageUrl = cms(cmsGlobal, 'logo', 'image_url', '');
+  const logoImageUrl = sanitizeImageUrl(cms(cmsGlobal, 'logo', 'image_url', ''));
   const logoMain = cms(cmsGlobal, 'logo', 'text_main', 'Flow');
   const logoAccent = cms(cmsGlobal, 'logo', 'text_accent', 'Dex');
   const [logoImageFailed, setLogoImageFailed] = useState(false);

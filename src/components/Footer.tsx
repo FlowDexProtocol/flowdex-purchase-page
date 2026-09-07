@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Container } from './ui';
 import { cms, type CmsPageData } from '@/lib/cms';
+import { isSafeLinkUrl, sanitizeImageUrl } from '@/lib/url-safety';
 
 // Absolute paths (not bare "#buy") so these work from any route — see the
 // same fix in Header.tsx's NAV_LINKS for why a bare hash breaks off-homepage.
@@ -45,17 +46,33 @@ function SocialIcon({ type }: { type: 'x' | 'telegram' | 'discord' }) {
 
 export default function Footer({ cmsGlobal = {} }: { cmsGlobal?: CmsPageData }) {
   const logoType = cms(cmsGlobal, 'logo', 'type', 'text');
-  const logoImageUrl = cms(cmsGlobal, 'logo', 'image_url', '');
+  const logoImageUrl = sanitizeImageUrl(cms(cmsGlobal, 'logo', 'image_url', ''));
   const logoMain = cms(cmsGlobal, 'logo', 'text_main', 'Flow');
   const logoAccent = cms(cmsGlobal, 'logo', 'text_accent', 'Dex');
   const supportEmail = cms(cmsGlobal, 'site', 'support_email', 'support@flowdexprotocol.com');
   const [logoImageFailed, setLogoImageFailed] = useState(false);
   const showLogoImage = logoType === 'image' && logoImageUrl && !logoImageFailed;
 
+  const safeSocialUrl = (raw: string, fallback: string) => (isSafeLinkUrl(raw) ? raw : fallback);
   const communityLinks = [
-    { key: 'x' as const, label: 'X / Twitter', href: cms(cmsGlobal, 'social', 'twitter', 'https://x.com/flowdexprotocol') },
-    { key: 'telegram' as const, label: 'Telegram', href: cms(cmsGlobal, 'social', 'telegram', 'https://t.me/flowdexprotocol') },
-    { key: 'discord' as const, label: 'Discord', href: cms(cmsGlobal, 'social', 'discord', 'https://discord.gg/flowdexprotocol') },
+    {
+      key: 'x' as const,
+      label: 'X / Twitter',
+      href: safeSocialUrl(cms(cmsGlobal, 'social', 'twitter', 'https://x.com/flowdexprotocol'), 'https://x.com/flowdexprotocol'),
+    },
+    {
+      key: 'telegram' as const,
+      label: 'Telegram',
+      href: safeSocialUrl(cms(cmsGlobal, 'social', 'telegram', 'https://t.me/flowdexprotocol'), 'https://t.me/flowdexprotocol'),
+    },
+    {
+      key: 'discord' as const,
+      label: 'Discord',
+      href: safeSocialUrl(
+        cms(cmsGlobal, 'social', 'discord', 'https://discord.gg/flowdexprotocol'),
+        'https://discord.gg/flowdexprotocol'
+      ),
+    },
     { key: 'docs' as const, label: 'Docs', href: 'https://docs.flowdexprotocol.com' },
   ];
 

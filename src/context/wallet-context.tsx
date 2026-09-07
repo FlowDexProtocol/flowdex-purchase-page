@@ -2,23 +2,13 @@
 // src/context/wallet-context.tsx
 // Wallet connection + buyer session state.
 //
-// - Token lives only in React state (memory) — never localStorage.
-// - The backend session is a hard 20-minute window from connection time
-//   (its own expires_in in the connect response is the source of truth,
-//   not a hardcoded frontend guess). It is NOT extended by user activity —
-//   a warning banner shows at 2 minutes remaining, and at 0 the token is
-//   cleared, Web3Modal is disconnected, and the user must explicitly
-//   reconnect (no signature needed, "connection IS authentication", but
-//   it's no longer done silently).
-// - Web3Modal/WalletConnect persists ITS OWN connection session to
-//   localStorage independently of our JWT, and silently restores it on
-//   every page load — meaning useWeb3ModalAccount() can report
-//   isConnected/address as true before the user has done anything this
-//   browser session, even days later. Since our JWT never survives a
-//   reload (by design, see above), that restore is never backed by a real
-//   backend session — see the isConnected effect below, which detects a
-//   restore that didn't come from the user clicking "Connect Wallet" this
-//   session and force-disconnects it instead of silently trusting it.
+// Session persistence: the JWT, its connection timestamp, and the wallet
+// address are stored in localStorage (fdp_token / fdp_session_start /
+// fdp_wallet) so a page reload or reopening the tab within 20 minutes
+// keeps the wallet connected — no reconnect prompt, no visible countdown,
+// no "session expired" messaging anywhere. A background check every 30
+// seconds silently clears everything once 20 minutes have passed since
+// the stored session started.
 // - A `?ref=FDX-XXXX-XXXX` URL param is auto-applied once per wallet.
 // ══════════════════════════════════════════════════
 
@@ -40,14 +30,61 @@ import { ApiError, applyReferral, connectWallet as apiConnectWallet } from '@/li
 import { CHAINS } from '@/lib/web3modal';
 import type { WalletConnectResponse } from '@/lib/types';
 
-// How long before the real expiry to show the "session expiring" banner.
-const SESSION_WARNING_MS = 2 * 60 * 1000;
+const SESSION_TTL_MS = 20 * 60 * 1000; // 20 minutes
+const EXPIRY_CHECK_INTERVAL_MS = 30 * 1000; // 30 seconds
+
+const TOKEN_KEY = 'fdp_token';
+const SESSION_START_KEY = 'fdp_session_start';
+const WALLET_KEY = 'fdp_wallet';
+
+interface StoredSession {
+  token: string;
+  walletAddress: string;
+  sessionStart: number;
+}
+
+function readStoredSession(): StoredSession | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const token = window.localStorage.getItem(TOKEN_KEY);
+    const sessionStartRaw = window.localStorage.getItem(SESSION_START_KEY);
+    const walletAddress = window.localStorage.getItem(WALLET_KEY);
+    if (!token || !sessionStartRaw || !walletAddress) return null;
+    const sessionStart = parseInt(sessionStartRaw, 10);
+    if (!Number.isFinite(sessionStart)) return null;
+    return { token, walletAddress, sessionStart };
+  } catch {
+    return null;
+  }
+}
+
+function storeSession(token: string, walletAddress: string) {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(TOKEN_KEY, token);
+    window.localStorage.setItem(SESSION_START_KEY, Date.now().toString());
+    window.localStorage.setItem(WALLET_KEY, walletAddress);
+  } catch {
+    // localStorage unavailable (private browsing, quota, etc.) — connecting
+    // still works, it just won't persist across a reload.
+  }
+}
+
+function clearStoredSession() {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.removeItem(TOKEN_KEY);
+    window.localStorage.removeItem(SESSION_START_KEY);
+    window.localStorage.removeItem(WALLET_KEY);
+  } catch {
+    // Nothing to clear.
+  }
+}
 
 // Sweeps every localStorage key WalletConnect/Web3Modal/AppKit (and the
-// wagmi-style adapters some versions of the SDK use internally) are known
-// to persist session/connection state under. A programmatic disconnect()
-// call alone doesn't reliably clear all of these across SDK versions —
-// this is the belt-and-suspenders half of tearing a connection down.
+// wagmi-style adapters some SDK versions use internally) are known to
+// persist connection state under. A programmatic disconnect() call alone
+// doesn't reliably clear all of these across SDK versions.
 const WALLETCONNECT_STORAGE_PREFIXES = ['wc@', '@w3m', '@appkit', '@reown', 'wagmi', 'W3M_', 'WCM_'];
 
 function clearWalletConnectStorage() {
@@ -62,8 +99,7 @@ function clearWalletConnectStorage() {
     }
     keysToRemove.forEach((key) => window.localStorage.removeItem(key));
   } catch {
-    // localStorage unavailable (private browsing, partitioned storage,
-    // etc.) — nothing to clear.
+    // Nothing to clear.
   }
 }
 
@@ -83,14 +119,8 @@ interface WalletContextValue {
   terminalCredits: number;
   pendingClaims: WalletConnectResponse['pending_claims'];
   error: string | null;
-  /** True in the last 2 minutes before the session hard-expires. */
-  sessionWarning: boolean;
-  /** True once the 20-minute session has expired — token has been cleared. */
-  sessionExpired: boolean;
   openConnectModal: () => void;
   disconnectWallet: () => Promise<void>;
-  /** Re-authenticates the still-connected wallet after the session expired. */
-  reconnectSession: () => Promise<void>;
   authedFetch: <T>(fn: (token: string) => Promise<T>) => Promise<T>;
 }
 
@@ -113,40 +143,10 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [pendingClaims, setPendingClaims] = useState<WalletConnectResponse['pending_claims']>([]);
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [sessionWarning, setSessionWarning] = useState(false);
-  const [sessionExpired, setSessionExpired] = useState(false);
 
-  const warningTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const expiryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const connectedWalletRef = useRef<string | null>(null);
   const referralAppliedRef = useRef<Set<string>>(new Set());
-  // Tracks whether a real backend session has ever been established for the
-  // currently-connected wallet. Several components (EmailCaptureBanner,
-  // PortfolioTab, ClaimsTab) call authedFetch as soon as `address` is set —
-  // which happens the instant the wallet connects, BEFORE the async
-  // POST /api/wallet/connect call below has resolved and set `token`. Without
-  // this flag, authedFetch couldn't tell "no session yet, still connecting"
-  // (harmless) from "had a session, now it's gone" (a real expiry) and would
-  // flash the "Session expired" banner on every single connect.
-  const hasSessionRef = useRef(false);
-  // Set only inside openConnectModal/reconnectSession's own open() call —
-  // i.e. only when the USER just clicked something this session. Checked
-  // once, the first time isConnected is observed true, to tell "the user
-  // just connected" from "Web3Modal silently restored a stale session".
-  const userInitiatedRef = useRef(false);
-  const staleCheckDoneRef = useRef(false);
 
-  const clearSessionTimers = useCallback(() => {
-    if (warningTimer.current) clearTimeout(warningTimer.current);
-    if (expiryTimer.current) clearTimeout(expiryTimer.current);
-    warningTimer.current = null;
-    expiryTimer.current = null;
-  }, []);
-
-  // Tears down Web3Modal/WalletConnect's own connection — not just our
-  // JWT. Callers decide what to do with token/session-flag state
-  // themselves (a timer expiry wants to KEEP showing "expired", an
-  // explicit disconnect or a stale-restore wants to show nothing).
   const teardownWalletConnection = useCallback(async () => {
     try {
       await disconnect();
@@ -156,6 +156,21 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }
     clearWalletConnectStorage();
   }, [disconnect]);
+
+  // Clears the stored session, our React state, and Web3Modal's own
+  // connection — silently, no banner or message. Used both when a stale
+  // (>20min) session is found on load and by the 30s background check.
+  const expireSession = useCallback(() => {
+    clearStoredSession();
+    connectedWalletRef.current = null;
+    setToken(null);
+    setReferralCode(null);
+    setReferredByCode(null);
+    setSummary(null);
+    setTerminalCredits(0);
+    setPendingClaims([]);
+    teardownWalletConnection();
+  }, [teardownWalletConnection]);
 
   const doConnect = useCallback(async (addr: string, cid?: number): Promise<string | null> => {
     setIsConnecting(true);
@@ -169,25 +184,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       setTerminalCredits(res.terminal_credits);
       setPendingClaims(res.pending_claims);
       connectedWalletRef.current = addr;
-      hasSessionRef.current = true;
-
-      // Hard 20-minute window from THIS connection — never extended by
-      // activity. expires_in (seconds) comes from the backend, not a
-      // hardcoded frontend value, so it always matches the real JWT TTL.
-      setSessionWarning(false);
-      setSessionExpired(false);
-      clearSessionTimers();
-      const ttlMs = res.expires_in * 1000;
-      warningTimer.current = setTimeout(() => setSessionWarning(true), Math.max(0, ttlMs - SESSION_WARNING_MS));
-      expiryTimer.current = setTimeout(() => {
-        setToken(null);
-        setSessionWarning(false);
-        setSessionExpired(true);
-        // Disconnect the wallet itself, not just our JWT — otherwise
-        // Web3Modal keeps reporting isConnected/address as true and the
-        // header still shows a connected wallet after "expiry".
-        teardownWalletConnection();
-      }, ttlMs);
+      storeSession(res.token, addr);
 
       if (typeof window !== 'undefined') {
         const rawRef = new URLSearchParams(window.location.search).get('ref');
@@ -220,48 +217,57 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsConnecting(false);
     }
-  }, [clearSessionTimers, teardownWalletConnection]);
+  }, []);
 
+  // Runs once on mount: restore a still-valid (<20min) session from
+  // localStorage immediately, or clear a stale one. Web3Modal reconnects
+  // the wallet itself from its own persisted session — connectedWalletRef
+  // is set here so the isConnected effect below recognizes that address as
+  // already authenticated instead of firing a redundant /api/wallet/connect
+  // call once Web3Modal catches up (it also self-corrects if Web3Modal ends
+  // up reporting a DIFFERENT address than the one we restored, since that
+  // effect's own connectedWalletRef check still applies).
   useEffect(() => {
-    // The FIRST time isConnected is observed true (whether that's this
-    // render or a later one, since Web3Modal's own session restore is
-    // async), check whether the user actually clicked "Connect Wallet"
-    // this session. If not, this is Web3Modal silently restoring a
-    // persisted session on a fresh page load — force it closed instead of
-    // treating it as a real (re)connection. See the file header comment.
-    if (isConnected && !staleCheckDoneRef.current) {
-      staleCheckDoneRef.current = true;
-      if (!userInitiatedRef.current) {
-        teardownWalletConnection();
-        return;
-      }
+    const stored = readStoredSession();
+    if (!stored) return;
+
+    if (Date.now() - stored.sessionStart >= SESSION_TTL_MS) {
+      expireSession();
+      return;
     }
 
+    connectedWalletRef.current = stored.walletAddress;
+    setToken(stored.token);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
     if (isConnected && address && connectedWalletRef.current !== address) {
       doConnect(address, chainId);
     }
     if (!isConnected && connectedWalletRef.current) {
       connectedWalletRef.current = null;
-      hasSessionRef.current = false;
       setToken(null);
       setReferralCode(null);
       setReferredByCode(null);
       setSummary(null);
       setTerminalCredits(0);
       setPendingClaims([]);
-      // Deliberately NOT resetting sessionWarning/sessionExpired here —
-      // this branch also runs when the 20-minute timer expired and called
-      // teardownWalletConnection() itself (see doConnect's expiryTimer),
-      // and that path wants the "expired" banner to stay up. An explicit
-      // disconnectWallet() call resets those flags itself before this
-      // branch even runs (see below).
-      clearSessionTimers();
     }
-  }, [isConnected, address, chainId, doConnect, clearSessionTimers, teardownWalletConnection]);
+  }, [isConnected, address, chainId, doConnect]);
 
+  // Background check — every 30 seconds, silently clear everything once
+  // 20 minutes have passed since the stored session started. No warning,
+  // no countdown: the next render just shows "Connect Wallet".
   useEffect(() => {
-    return () => clearSessionTimers();
-  }, [clearSessionTimers]);
+    const id = setInterval(() => {
+      const stored = readStoredSession();
+      if (stored && Date.now() - stored.sessionStart >= SESSION_TTL_MS) {
+        expireSession();
+      }
+    }, EXPIRY_CHECK_INTERVAL_MS);
+    return () => clearInterval(id);
+  }, [expireSession]);
 
   // Informational-only chain detection — never blocks or prompts a switch.
   // Re-runs whenever the wallet reports a different chainId (i.e. the user
@@ -290,65 +296,34 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   }, [isConnected, walletProvider, chainId]);
 
   const disconnectWallet = useCallback(async () => {
-    clearSessionTimers();
     connectedWalletRef.current = null;
-    hasSessionRef.current = false;
     setToken(null);
     setReferralCode(null);
     setReferredByCode(null);
     setSummary(null);
     setTerminalCredits(0);
     setPendingClaims([]);
-    setSessionWarning(false);
-    setSessionExpired(false);
-    // Clears Web3Modal/WalletConnect's own persisted session too, not just
-    // our JWT — otherwise it would silently restore on the next page load.
+    clearStoredSession();
     await teardownWalletConnection();
-  }, [teardownWalletConnection, clearSessionTimers]);
+  }, [teardownWalletConnection]);
 
-  // Re-authenticates the still-connected wallet after the session hard-
-  // expired — no signature needed, but (unlike the old behavior) this only
-  // ever runs from an explicit user action, never silently on a timer.
-  const reconnectSession = useCallback(async () => {
-    if (address) {
-      await doConnect(address, chainId);
-    } else {
-      userInitiatedRef.current = true;
-      open();
-    }
-  }, [address, chainId, doConnect, open]);
-
-  // Runs an authenticated request. No silent reconnect on a 401 or a
-  // missing token while a session HAD been established — that means the
-  // session is genuinely expired, so this surfaces that state (for the
-  // expired banner + reconnect button) and rejects, rather than quietly
-  // re-authenticating behind the user's back. But if no session has been
-  // established yet for this wallet (doConnect's connect call is still in
-  // flight — see hasSessionRef above), a missing token just means "not
-  // ready yet", not "expired" — don't show the expired banner for that.
+  // Runs an authenticated request. A 401 means the backend rejected the
+  // token (expired or revoked server-side) — silently clear the stale
+  // local session, no message shown, then rethrow so the caller's own
+  // error handling (each call site already has one) can react.
   const authedFetch = useCallback(
     async <T,>(fn: (token: string) => Promise<T>): Promise<T> => {
-      if (!address || !token) {
-        if (hasSessionRef.current) {
-          setSessionExpired(true);
-          throw new Error('Wallet session expired. Please reconnect your wallet.');
-        }
-        throw new Error('Wallet session not ready yet.');
-      }
+      if (!token) throw new Error('Wallet not connected');
       try {
         return await fn(token);
       } catch (err) {
         if (err instanceof ApiError && err.status === 401) {
-          clearSessionTimers();
-          setToken(null);
-          setSessionWarning(false);
-          setSessionExpired(true);
-          teardownWalletConnection();
+          expireSession();
         }
         throw err;
       }
     },
-    [token, address, clearSessionTimers, teardownWalletConnection]
+    [token, expireSession]
   );
 
   const value = useMemo<WalletContextValue>(
@@ -366,14 +341,10 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       terminalCredits,
       pendingClaims,
       error,
-      sessionWarning,
-      sessionExpired,
       openConnectModal: () => {
-        userInitiatedRef.current = true;
         open();
       },
       disconnectWallet,
-      reconnectSession,
       authedFetch,
     }),
     [
@@ -390,11 +361,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       terminalCredits,
       pendingClaims,
       error,
-      sessionWarning,
-      sessionExpired,
       open,
       disconnectWallet,
-      reconnectSession,
       authedFetch,
     ]
   );

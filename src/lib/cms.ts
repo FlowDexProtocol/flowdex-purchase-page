@@ -16,9 +16,15 @@ export type CmsPageData = Record<string, string>;
 
 // cache() memoizes per server-request — safe for concurrent requests,
 // unlike a module-level mutable variable which would leak across them.
+//
+// Explicit revalidate: 5 rather than relying on fetch()'s implicit default
+// (effectively indefinite/force-cache in a statically-rendered route) —
+// without it, an admin editing a CMS field here wouldn't see it reflected
+// on this site until the next full redeploy. Matches flowdex-landing's
+// same fix for the same underlying issue.
 export const fetchPageContent = cache(async (page: string): Promise<CmsPageData> => {
   try {
-    const res = await fetch(`${API_BASE}/api/cms/page/${encodeURIComponent(page)}`);
+    const res = await fetch(`${API_BASE}/api/cms/page/${encodeURIComponent(page)}`, { next: { revalidate: 5 } });
     if (!res.ok) return {};
     return (await res.json()) as CmsPageData;
   } catch {

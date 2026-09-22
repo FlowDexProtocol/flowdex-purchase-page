@@ -7,19 +7,13 @@ import type { ScenariosResponse } from '@/lib/types';
 import { formatCompactUSD, formatTokenAmount, formatUSD } from '@/lib/format';
 import { Card, EmptyState, Mono, Section, SectionHeading, Spinner } from './ui';
 
-export default function MarketCapScenarios() {
+export default function MarketCapScenarios({ embedded = false }: { embedded?: boolean } = {}) {
   const { data, loading, error } = usePolling<ScenariosResponse>(getPublicScenarios, 0, []);
   const [tokens, setTokens] = useState('100000');
   const tokenAmount = parseFloat(tokens) || 0;
 
-  return (
-    <Section id="scenarios">
-      <SectionHeading
-        eyebrow="Projections"
-        title="Market Cap Scenarios"
-        description="Illustrative only — not a guarantee of future price or performance."
-      />
-
+  const content = (
+    <>
       <div className="mb-6 flex flex-wrap items-center gap-3">
         <label htmlFor="scenario-tokens" className="text-sm text-ink-dim">
           Your $FDP amount
@@ -64,6 +58,19 @@ export default function MarketCapScenarios() {
           Based on a listing price of ${data.listing_price.toFixed(2)} and total supply of {formatTokenAmount(data.total_supply, 0)} $FDP.
         </p>
       )}
+    </>
+  );
+
+  if (embedded) return content;
+
+  return (
+    <Section id="scenarios">
+      <SectionHeading
+        eyebrow="Projections"
+        title="Market Cap Scenarios"
+        description="Illustrative only — not a guarantee of future price or performance."
+      />
+      {content}
     </Section>
   );
 }

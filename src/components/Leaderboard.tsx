@@ -8,13 +8,10 @@ import { Badge, Card, EmptyState, Mono, Section, SectionHeading, Spinner } from 
 
 const RANK_TONE = ['text-primary', 'text-ink-dim', 'text-purple'] as const;
 
-export default function Leaderboard() {
+export default function Leaderboard({ embedded = false }: { embedded?: boolean } = {}) {
   const { data, loading, error } = usePolling<LeaderboardEntry[]>(() => getPublicLeaders(10), 30000, []);
 
-  return (
-    <Section id="leaderboard">
-      <SectionHeading eyebrow="Top Buyers" title="Presale Leaderboard" description="Ranked by total USD committed. Wallets are truncated for privacy." />
-
+  const content = (
       <Card className="p-0 overflow-hidden">
         {loading && !data ? (
           <div className="flex justify-center py-12">
@@ -53,6 +50,14 @@ export default function Leaderboard() {
           </div>
         )}
       </Card>
+  );
+
+  if (embedded) return content;
+
+  return (
+    <Section id="leaderboard">
+      <SectionHeading eyebrow="Top Buyers" title="Presale Leaderboard" description="Ranked by total USD committed. Wallets are truncated for privacy." />
+      {content}
     </Section>
   );
 }

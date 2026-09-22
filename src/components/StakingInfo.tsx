@@ -5,11 +5,10 @@ import { getPublicStaking } from '@/lib/api';
 import type { StakingInfo as StakingInfoType } from '@/lib/types';
 import { Badge, Card, EmptyState, Section, Spinner } from './ui';
 
-export default function StakingInfo() {
+export default function StakingInfo({ embedded = false }: { embedded?: boolean } = {}) {
   const { data, loading, error } = usePolling<StakingInfoType>(getPublicStaking, 0, []);
 
-  return (
-    <Section id="staking">
+  const content = (
       <Card className="relative overflow-hidden bg-gradient-to-br from-card to-bg-soft">
         <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-purple/10 blur-3xl" />
         {loading && !data ? (
@@ -41,6 +40,13 @@ export default function StakingInfo() {
           </div>
         ) : null}
       </Card>
+  );
+
+  if (embedded) return content;
+
+  return (
+    <Section id="staking">
+      {content}
     </Section>
   );
 }

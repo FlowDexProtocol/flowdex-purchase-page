@@ -57,7 +57,7 @@ function resolveGasNote(cmsBuy: CmsPageData, key: PaymentMethodKey): string {
   return GAS_FEE_NOTES[key];
 }
 
-export default function BuyForm({ cmsBuy = {}, cmsGlobal = {} }: { cmsBuy?: CmsPageData; cmsGlobal?: CmsPageData }) {
+export default function BuyForm({ cmsBuy = {}, cmsGlobal = {}, embedded = false }: { cmsBuy?: CmsPageData; cmsGlobal?: CmsPageData; embedded?: boolean }) {
   const { address, isConnected, openConnectModal, referralCode, referredByCode, authedFetch } = useWallet();
   const { walletProvider } = useWeb3ModalProvider();
   const { data: tier } = useTierCurrent();
@@ -349,14 +349,7 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {} }: { cmsBuy?: CmsP
     };
   }, [intent, intentTier, intentReferralCode, intentUsdAmount]);
 
-  return (
-    <Section id="buy">
-      <SectionHeading
-        eyebrow="Presale"
-        title={cms(cmsBuy, 'form', 'title', 'Buy $FDP')}
-        description={cms(cmsBuy, 'form', 'subtitle', 'Lock in your price for 15 minutes and receive a deposit address.')}
-      />
-
+  const content = (
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
         <Card className="lg:col-span-3">
           <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-ink-dim">Pay with</label>
@@ -734,6 +727,18 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {} }: { cmsBuy?: CmsP
           </a>
         </p>
       </div>
+  );
+
+  if (embedded) return content;
+
+  return (
+    <Section id="buy">
+      <SectionHeading
+        eyebrow="Presale"
+        title={cms(cmsBuy, 'form', 'title', 'Buy $FDP')}
+        description={cms(cmsBuy, 'form', 'subtitle', 'Lock in your price for 15 minutes and receive a deposit address.')}
+      />
+      {content}
     </Section>
   );
 }

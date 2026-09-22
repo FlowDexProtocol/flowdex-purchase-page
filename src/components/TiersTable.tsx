@@ -6,13 +6,10 @@ import type { Tier } from '@/lib/types';
 import { formatPercentage, formatTokenPrice, formatUSD } from '@/lib/format';
 import { Badge, Card, EmptyState, Mono, Section, SectionHeading, Spinner } from './ui';
 
-export default function TiersTable() {
+export default function TiersTable({ embedded = false }: { embedded?: boolean } = {}) {
   const { data, loading, error } = usePolling<Tier[]>(getTiers, 60000, []);
 
-  return (
-    <Section id="tiers">
-      <SectionHeading eyebrow="Full Schedule" title="All Presale Tiers" description="All 8 tiers, pricing, hard caps, and vesting terms." />
-
+  const content = (
       <Card className="overflow-hidden p-0">
         {loading && !data ? (
           <div className="flex justify-center py-12">
@@ -71,6 +68,14 @@ export default function TiersTable() {
           </div>
         )}
       </Card>
+  );
+
+  if (embedded) return content;
+
+  return (
+    <Section id="tiers">
+      <SectionHeading eyebrow="Full Schedule" title="All Presale Tiers" description="All 8 tiers, pricing, hard caps, and vesting terms." />
+      {content}
     </Section>
   );
 }

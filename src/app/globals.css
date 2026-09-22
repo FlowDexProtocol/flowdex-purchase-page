@@ -86,6 +86,10 @@ body {
   background: var(--color-card-hover);
 }
 
+.dashboard-safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
 .bg-radial-glow {
   background:
     radial-gradient(60% 50% at 50% 0%, rgba(98, 126, 234, 0.16) 0%, rgba(98, 126, 234, 0) 70%),

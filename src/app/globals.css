@@ -1,29 +1,40 @@
 @import "tailwindcss";
 
+/* ══════════════════════════════════════════════════
+   Design tokens — aligned with flowdex-landing.
+   Background is deep royal blue (#161660), NOT black.
+   Fonts: Inter (body/nav/labels), JetBrains Mono (numbers/prices).
+   The landing page also uses Cormorant Garamond for headlines,
+   but the dashboard keeps Inter for its denser UI.
+   ══════════════════════════════════════════════════ */
 :root {
-  --color-bg: #060d18;
-  --color-bg-soft: #081222;
-  --color-card: #0b1a2e;
-  --color-card-hover: #11253f;
-  --color-border: #1a2a3f;
-  --color-ink: #e8ecf1;
-  /* Spec defines a single muted tone (#8899AA) used for both "secondary"
-     and "caption" text, distinguished by size, not color — collapses the
-     previous 3-tier ink/ink-dim/ink-faint fade into 2 tiers. */
-  --color-ink-dim: #8899aa;
-  --color-ink-faint: #8899aa;
-  --color-primary: #627eea;
-  --color-primary-dim: rgba(98, 126, 234, 0.14);
-  --color-green: #00ff88;
-  --color-green-dim: rgba(0, 255, 136, 0.14);
+  --color-bg: #161660;
+  --color-bg-soft: rgba(255, 255, 255, 0.02);
+  --color-card: rgba(255, 255, 255, 0.02);
+  --color-card-hover: rgba(255, 255, 255, 0.05);
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-soft: rgba(255, 255, 255, 0.04);
+  --color-ink: #fff;
+  --color-ink-dim: rgba(255, 255, 255, 0.4);
+  --color-ink-faint: rgba(255, 255, 255, 0.28);
+  --color-primary: #6c5ce7;
+  --color-primary-dim: rgba(108, 92, 231, 0.1);
+  --color-primary-border: rgba(108, 92, 231, 0.25);
+  --color-green: #4ade80;
+  --color-green-dim: rgba(74, 222, 128, 0.08);
   --color-red: #ef4444;
-  --color-red-dim: rgba(239, 68, 68, 0.14);
-  --color-purple: #9945ff;
-  --color-purple-dim: rgba(153, 69, 255, 0.14);
+  --color-red-dim: rgba(239, 68, 68, 0.08);
+  --color-purple: #a855f7;
+  --color-purple-dim: rgba(168, 85, 247, 0.1);
   --color-amber: #f59e0b;
-  --color-amber-dim: rgba(245, 158, 11, 0.12);
-  /* Matches flowdex-landing's footer background exactly. */
-  --color-footer-bg: #040a14;
+  --color-amber-dim: rgba(245, 158, 11, 0.08);
+  --color-footer-bg: #12124f;
+  /* Holographic gradient accents — same as landing page */
+  --grad-purple: #6c5ce7;
+  --grad-blue: #3b82f6;
+  --grad-teal: #2dd4bf;
+  --grad-violet: #a855f7;
+  --grad-cyan: #4ecdc4;
 }
 
 @theme inline {
@@ -32,11 +43,13 @@
   --color-card: var(--color-card);
   --color-card-hover: var(--color-card-hover);
   --color-border: var(--color-border);
+  --color-border-soft: var(--color-border-soft);
   --color-ink: var(--color-ink);
   --color-ink-dim: var(--color-ink-dim);
   --color-ink-faint: var(--color-ink-faint);
   --color-primary: var(--color-primary);
   --color-primary-dim: var(--color-primary-dim);
+  --color-primary-border: var(--color-primary-border);
   --color-green: var(--color-green);
   --color-green-dim: var(--color-green-dim);
   --color-red: var(--color-red);
@@ -46,7 +59,7 @@
   --color-amber: var(--color-amber);
   --color-amber-dim: var(--color-amber-dim);
   --color-footer-bg: var(--color-footer-bg);
-  --font-sans: var(--font-dm-sans), system-ui, sans-serif;
+  --font-sans: var(--font-inter), system-ui, sans-serif;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
 }
 
@@ -92,6 +105,6 @@ body {
 
 .bg-radial-glow {
   background:
-    radial-gradient(60% 50% at 50% 0%, rgba(98, 126, 234, 0.16) 0%, rgba(98, 126, 234, 0) 70%),
-    radial-gradient(40% 40% at 85% 15%, rgba(153, 69, 255, 0.1) 0%, rgba(153, 69, 255, 0) 70%);
+    radial-gradient(60% 50% at 50% 0%, rgba(108, 92, 231, 0.16) 0%, rgba(108, 92, 231, 0) 70%),
+    radial-gradient(40% 40% at 85% 15%, rgba(168, 85, 247, 0.1) 0%, rgba(168, 85, 247, 0) 70%);
 }

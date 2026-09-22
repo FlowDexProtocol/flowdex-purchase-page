@@ -1,13 +1,13 @@
 import type { Metadata, Viewport } from 'next';
-import { DM_Sans, JetBrains_Mono } from 'next/font/google';
+import { Inter, JetBrains_Mono } from 'next/font/google';
 import Providers from '@/components/Providers';
 import CookieConsent from '@/components/CookieConsent';
 import './globals.css';
 
 const SITE_URL = 'https://purchase.flowdexprotocol.com';
 
-const dmSans = DM_Sans({
-  variable: '--font-dm-sans',
+const inter = Inter({
+  variable: '--font-inter',
   subsets: ['latin'],
   display: 'swap',
 });
@@ -43,12 +43,12 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#060d18',
+  themeColor: '#161660',
 };
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
-    <html lang="en" className={`${dmSans.variable} ${jetbrainsMono.variable} h-full`}>
+    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable} h-full`}>
       <body className="min-h-full flex flex-col bg-bg text-ink antialiased">
         <Providers>{children}</Providers>
         <CookieConsent />

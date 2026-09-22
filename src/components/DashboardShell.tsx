@@ -258,7 +258,7 @@ export default function DashboardShell({
   return (
     <div className="flex h-[100dvh] overflow-hidden bg-bg">
       {/* ── Desktop sidebar ── */}
-      <aside className="hidden lg:flex w-60 flex-col border-r border-border bg-card/40 shrink-0">
+      <aside className="hidden lg:flex w-60 flex-col border-r border-border bg-white/[0.03] shrink-0">
         {/* Logo */}
         <div className="flex h-16 items-center px-5 border-b border-border shrink-0">{Logo}</div>
 

@@ -544,7 +544,7 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {}, embedded = false 
             </div>
           ) : watchResult?.status === 'confirmed' ? (
             <div className="mt-4 flex flex-col items-center gap-4 rounded-xl border border-green/30 bg-green-dim py-8 text-center shadow-[0_0_40px_rgba(0,255,136,0.15)]">
-              <span className="flex h-16 w-16 items-center justify-center rounded-full bg-green text-3xl font-bold text-[#03131a]">
+              <span className="flex h-16 w-16 items-center justify-center rounded-full bg-green text-3xl font-bold text-bg">
                 ✓
               </span>
               <div>

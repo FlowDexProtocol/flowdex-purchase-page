@@ -9,10 +9,10 @@
 
 import type { PaymentMethodKey } from '@/lib/types';
 
-const SELECTED_GLYPH = '#627EEA'; // matches the selected pill's background
+const SELECTED_GLYPH = '#6c5ce7'; // matches the selected pill's primary color
 
 function EthIcon({ selected }: { selected: boolean }) {
-  const dark = selected ? '#FFFFFF' : '#627EEA';
+  const dark = selected ? '#FFFFFF' : '#6c5ce7';
   const light = selected ? 'rgba(255,255,255,0.6)' : '#9AA8F5';
   return (
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
@@ -44,7 +44,7 @@ function UsdtIcon({ selected }: { selected: boolean }) {
 function UsdtTrc20Icon({ selected }: { selected: boolean }) {
   const shape = selected ? '#FFFFFF' : '#26A17B';
   const glyph = selected ? SELECTED_GLYPH : '#FFFFFF';
-  const badgeRing = selected ? '#627EEA' : '#0B1A2E';
+  const badgeRing = selected ? '#6c5ce7' : '#161660';
   return (
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
       <circle cx="10" cy="10" r="9" fill={shape} />
@@ -74,7 +74,7 @@ function UsdcIcon({ selected }: { selected: boolean }) {
 
 function BnbIcon({ selected }: { selected: boolean }) {
   const shape = selected ? '#FFFFFF' : '#F0B90B';
-  const hole = selected ? SELECTED_GLYPH : '#0B1A2E';
+  const hole = selected ? SELECTED_GLYPH : '#161660';
   return (
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
       <polygon points="10,1 17,10 10,19 3,10" fill={shape} />

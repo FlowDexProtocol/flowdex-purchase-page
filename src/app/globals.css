@@ -59,6 +59,7 @@
   --color-amber: var(--color-amber);
   --color-amber-dim: var(--color-amber-dim);
   --color-footer-bg: var(--color-footer-bg);
+  --font-serif: var(--font-cormorant), Georgia, serif;
   --font-sans: var(--font-inter), system-ui, sans-serif;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
 }

@@ -178,7 +178,7 @@ function StatCard({
   progress?: number;
 }) {
   return (
-    <div className="rounded-lg border border-border bg-card px-3 py-2.5">
+    <div className="rounded-xl border border-border-soft bg-card px-3 py-2.5">
       <p className="text-[10px] uppercase tracking-widest text-ink-dim sm:text-[11px]">{label}</p>
       {loading ? (
         <div className="mt-1">
@@ -237,20 +237,23 @@ export default function DashboardShell({
   }
 
   const Logo = (
-    <button onClick={() => switchView('buy')} className="flex items-center gap-0.5">
+    <button onClick={() => switchView('buy')} className="flex items-center gap-3">
       {showLogoImage ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={logoImageUrl}
           alt={`${logoMain}${logoAccent}`}
-          className="h-7 w-auto object-contain"
+          className="h-9 w-auto object-contain"
           onError={() => setLogoImageFailed(true)}
         />
       ) : (
-        <>
-          <span className="text-lg font-bold text-ink">{logoMain}</span>
-          <span className="text-lg font-bold text-primary">{logoAccent}</span>
-        </>
+        <div className="leading-none">
+          <span className="font-serif text-xl">
+            <em className="font-light italic">{logoMain}</em>
+            <span className="font-normal">{logoAccent}</span>
+          </span>
+          <span className="mt-px block text-[8px] uppercase tracking-[3px] text-white/30">Protocol</span>
+        </div>
       )}
     </button>
   );
@@ -417,7 +420,7 @@ export default function DashboardShell({
           <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
             {/* View heading (hidden on Buy — the form speaks for itself) */}
             {activeView !== 'buy' && (
-              <h1 className="mb-6 text-2xl font-bold text-ink">{VIEW_TITLES[activeView]}</h1>
+              <h1 className="mb-6 font-serif text-3xl font-light text-ink sm:text-4xl">{VIEW_TITLES[activeView]}</h1>
             )}
 
             {activeView === 'buy' && <BuyForm cmsBuy={cmsBuy} cmsGlobal={cmsGlobal} embedded />}

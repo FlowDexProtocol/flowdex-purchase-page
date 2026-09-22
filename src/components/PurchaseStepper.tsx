@@ -32,7 +32,7 @@ export default function PurchaseStepper({ status }: { status: PurchaseWatchStatu
             <span
               className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${
                 isComplete
-                  ? 'bg-green text-[#03131a]'
+                  ? 'bg-green text-bg'
                   : isActive
                     ? 'border-2 border-primary text-primary'
                     : 'border border-border text-ink-faint'

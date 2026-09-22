@@ -79,7 +79,7 @@ export default function Hero({ cmsBuy = {} }: { cmsBuy?: CmsPageData }) {
 
               <Link
                 href="/#buy"
-                className="mt-5 flex w-full items-center justify-center rounded-lg bg-primary px-4 py-3 text-sm font-bold text-[#03131a] hover:bg-primary/90 transition-colors"
+                className="mt-5 flex w-full items-center justify-center rounded-full bg-primary px-7 py-3 text-[11px] font-medium uppercase tracking-[0.15em] text-white hover:bg-primary/90 transition-all hover:-translate-y-0.5"
               >
                 Buy $FDP Now
               </Link>

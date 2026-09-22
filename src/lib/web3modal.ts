@@ -84,10 +84,10 @@ createWeb3Modal({
   enableAnalytics: true,
   themeMode: 'dark',
   themeVariables: {
-    '--w3m-color-mix': '#627EEA',
+    '--w3m-color-mix': '#6c5ce7',
     '--w3m-color-mix-strength': 20,
-    '--w3m-accent': '#627EEA',
-    '--w3m-font-family': 'DM Sans, sans-serif',
+    '--w3m-accent': '#6c5ce7',
+    '--w3m-font-family': 'Inter, system-ui, sans-serif',
     '--w3m-border-radius-master': '6px',
   },
 });

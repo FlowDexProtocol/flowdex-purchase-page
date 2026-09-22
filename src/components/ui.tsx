@@ -36,7 +36,7 @@ export function SectionHeading({
       {eyebrow && (
         <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary">{eyebrow}</p>
       )}
-      <h2 className="text-2xl sm:text-3xl font-bold text-ink">{title}</h2>
+      <h2 className="font-serif text-3xl sm:text-4xl font-light text-ink">{title}</h2>
       {description && <p className="mt-2 max-w-2xl text-sm sm:text-base text-ink-dim">{description}</p>}
     </div>
   );
@@ -45,7 +45,7 @@ export function SectionHeading({
 export function Card({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
     <div
-      className={`rounded-xl border border-border bg-card p-6 transition-[border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-primary/60 ${className}`}
+      className={`rounded-2xl border border-border-soft bg-card p-6 transition-[border-color,transform] duration-200 hover:-translate-y-1 hover:border-white/[0.12] ${className}`}
     >
       {children}
     </div>
@@ -73,15 +73,11 @@ export function Button({
   ...rest
 }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: ButtonVariant }) {
   const base =
-    'inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-6 py-3 text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed';
+    'inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-7 py-3 text-[11px] font-medium uppercase tracking-[0.15em] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed';
   const variants: Record<ButtonVariant, string> = {
-    // Dark text on the blue fill (not literal white) — deliberately kept:
-    // this is the established convention across every FlowDex frontend
-    // this session (better contrast on a mid-tone #627EEA than white text),
-    // and flagged in the audit report rather than changed unilaterally.
-    primary: 'bg-primary text-[#03131a] hover:bg-primary/90',
-    secondary: 'bg-card-hover text-ink border border-border hover:border-primary/50',
-    outline: 'bg-transparent text-primary border border-primary hover:bg-primary-dim',
+    primary: 'bg-primary text-white hover:bg-primary/90 hover:-translate-y-0.5 shadow-[0_0_24px_rgba(108,92,231,0.15)]',
+    secondary: 'bg-white/[0.04] text-ink border border-white/[0.22] backdrop-blur-sm hover:bg-white/10 hover:border-white/40 hover:shadow-[0_0_24px_rgba(108,92,231,0.1)]',
+    outline: 'bg-transparent text-primary border border-primary/60 hover:bg-primary-dim hover:border-primary',
     ghost: 'text-ink-dim hover:text-ink hover:bg-white/5',
     danger: 'bg-red text-white hover:bg-red/90',
   };
@@ -102,15 +98,15 @@ export function Badge({
   className?: string;
 }) {
   const tones: Record<string, string> = {
-    primary: 'bg-primary-dim text-primary',
-    green: 'bg-green-dim text-green',
-    red: 'bg-red-dim text-red',
-    purple: 'bg-purple-dim text-purple',
-    neutral: 'bg-white/5 text-ink-dim',
-    amber: 'bg-amber-dim text-amber',
+    primary: 'bg-primary-dim text-primary border border-primary-border',
+    green: 'bg-green-dim text-green border border-green/20',
+    red: 'bg-red-dim text-red border border-red/20',
+    purple: 'bg-purple-dim text-purple border border-purple/20',
+    neutral: 'bg-white/5 text-ink-dim border border-white/[0.08]',
+    amber: 'bg-amber-dim text-amber border border-amber/20',
   };
   return (
-    <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${tones[tone]} ${className}`}>
+    <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.12em] ${tones[tone]} ${className}`}>
       {children}
     </span>
   );
@@ -128,8 +124,14 @@ export function Spinner({ className = '' }: { className?: string }) {
 export function ProgressBar({ pct, className = '' }: { pct: number; className?: string }) {
   const clamped = Math.min(100, Math.max(0, pct));
   return (
-    <div className={`h-2.5 w-full overflow-hidden rounded-full bg-white/5 ${className}`}>
-      <div className="h-full rounded-full bg-green transition-[width] duration-700 ease-out" style={{ width: `${clamped}%` }} />
+    <div className={`h-1 w-full overflow-hidden rounded-full bg-white/5 ${className}`}>
+      <div
+        className="h-full rounded-full transition-[width] duration-700 ease-out"
+        style={{
+          width: `${clamped}%`,
+          background: 'linear-gradient(90deg, rgba(255,255,255,0.5), rgba(255,255,255,0.2))',
+        }}
+      />
     </div>
   );
 }
@@ -151,7 +153,7 @@ export function CopyButton({ value, label = 'Copy' }: { value: string; label?: s
     <button
       type="button"
       onClick={onCopy}
-      className="inline-flex min-h-11 shrink-0 items-center gap-1 rounded-md border border-border px-3 py-1 text-xs font-semibold text-ink-dim hover:text-primary hover:border-primary/50 transition-colors"
+      className="inline-flex min-h-11 shrink-0 items-center gap-1 rounded-full border border-white/[0.12] px-4 py-1 text-[10px] font-medium uppercase tracking-[0.1em] text-ink-dim hover:text-ink hover:border-white/30 transition-colors"
     >
       {copied ? 'Copied' : label}
     </button>
@@ -222,14 +224,14 @@ export function VestingTimeline({
 export function Input({ className = '', ...rest }: InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
-      className={`min-h-11 w-full rounded-lg border border-border bg-bg-soft px-4 py-2.5 text-sm text-ink placeholder:text-ink-faint outline-none focus:border-primary/60 ${className}`}
+      className={`min-h-11 w-full rounded-xl border border-border-soft bg-bg-soft px-4 py-2.5 text-sm text-ink placeholder:text-ink-faint outline-none focus:border-primary/60 transition-colors ${className}`}
       {...rest}
     />
   );
 }
 
 export function EmptyState({ children }: { children: ReactNode }) {
-  return <div className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-ink-dim">{children}</div>;
+  return <div className="rounded-2xl border border-border-soft bg-white/[0.02] p-10 text-center text-sm text-ink-dim">{children}</div>;
 }
 
 export function ErrorNote({ children }: { children: ReactNode }) {

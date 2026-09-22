@@ -119,7 +119,7 @@ export default function ClaimsTab() {
         <p>No purchases yet. Buy $FDP to see your vesting schedule and claims here.</p>
         <Link
           href="/#buy"
-          className="mt-4 inline-flex min-h-11 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-[#03131a] hover:bg-primary/90 transition-colors"
+          className="mt-4 inline-flex min-h-11 items-center justify-center rounded-full bg-primary px-7 py-3 text-[11px] font-medium uppercase tracking-[0.15em] text-white hover:bg-primary/90 transition-all hover:-translate-y-0.5"
         >
           Buy $FDP
         </Link>

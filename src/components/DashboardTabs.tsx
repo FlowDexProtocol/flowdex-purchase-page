@@ -45,7 +45,7 @@ export default function DashboardTabs() {
                 key={t.key}
                 onClick={() => setActive(t.key)}
                 className={`min-h-11 flex-1 shrink-0 whitespace-nowrap rounded-md px-4 py-2 text-sm font-semibold transition-colors sm:flex-none ${
-                  active === t.key ? 'bg-primary text-[#03131a]' : 'text-ink-dim hover:text-ink'
+                  active === t.key ? 'bg-primary text-white' : 'text-ink-dim hover:text-ink'
                 }`}
               >
                 {t.label}

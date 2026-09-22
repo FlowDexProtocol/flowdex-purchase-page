@@ -1,10 +1,18 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter, JetBrains_Mono } from 'next/font/google';
+import { Cormorant_Garamond, Inter, JetBrains_Mono } from 'next/font/google';
 import Providers from '@/components/Providers';
 import CookieConsent from '@/components/CookieConsent';
 import './globals.css';
 
 const SITE_URL = 'https://purchase.flowdexprotocol.com';
+
+const cormorant = Cormorant_Garamond({
+  variable: '--font-cormorant',
+  subsets: ['latin'],
+  weight: ['300', '400', '500'],
+  style: ['normal', 'italic'],
+  display: 'swap',
+});
 
 const inter = Inter({
   variable: '--font-inter',
@@ -48,7 +56,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
-    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable} h-full`}>
+    <html lang="en" className={`${cormorant.variable} ${inter.variable} ${jetbrainsMono.variable} h-full`}>
       <body className="min-h-full flex flex-col bg-bg text-ink antialiased">
         <Providers>{children}</Providers>
         <CookieConsent />

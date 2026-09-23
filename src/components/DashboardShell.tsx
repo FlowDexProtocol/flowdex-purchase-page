@@ -19,6 +19,19 @@ import TiersTable from './TiersTable';
 import EmailCaptureBanner from './EmailCaptureBanner';
 
 // ══════════════════════════════════════════════════
+// Logo drops — animated gradient blobs (matches landing page)
+// ══════════════════════════════════════════════════
+
+function LogoDrops({ className = '' }: { className?: string }) {
+  return (
+    <div className={`logo-drops ${className}`}>
+      <div className="drop drop-1" />
+      <div className="drop drop-2" />
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════
 // View routing
 // ══════════════════════════════════════════════════
 
@@ -247,13 +260,16 @@ export default function DashboardShell({
           onError={() => setLogoImageFailed(true)}
         />
       ) : (
-        <div className="leading-none">
-          <span className="font-serif text-xl">
-            <em className="font-light italic">{logoMain}</em>
-            <span className="font-normal">{logoAccent}</span>
-          </span>
-          <span className="mt-px block text-[8px] uppercase tracking-[3px] text-white/30">Protocol</span>
-        </div>
+        <>
+          <LogoDrops />
+          <div className="leading-none">
+            <span className="font-serif text-xl">
+              <em className="font-light italic">{logoMain}</em>
+              <span className="font-normal">{logoAccent}</span>
+            </span>
+            <span className="mt-px block text-[8px] uppercase tracking-[3px] text-white/30">Protocol</span>
+          </div>
+        </>
       )}
     </button>
   );
@@ -329,24 +345,8 @@ export default function DashboardShell({
           </a>
         </nav>
 
-        {/* Wallet + footer */}
-        <div className="border-t border-border p-4 shrink-0 space-y-3">
-          {isConnected && address ? (
-            <>
-              <div className="flex items-center gap-2">
-                <span className="h-2 w-2 shrink-0 rounded-full bg-green" />
-                <Mono className="truncate text-xs text-ink">{truncateWallet(address)}</Mono>
-              </div>
-              {detectedChainName && <p className="text-[11px] text-ink-faint">{detectedChainName}</p>}
-              <button onClick={disconnectWallet} className="text-xs text-ink-faint hover:text-red transition-colors">
-                Disconnect
-              </button>
-            </>
-          ) : (
-            <Button variant="outline" className="w-full text-xs" onClick={openConnectModal} disabled={isConnecting}>
-              {isConnecting ? 'Connecting…' : 'Connect Wallet'}
-            </Button>
-          )}
+        {/* Footer */}
+        <div className="border-t border-border p-4 shrink-0 space-y-2">
           <div className="flex items-center gap-3 text-[10px] text-ink-faint">
             <span>&copy; {new Date().getFullYear()} FlowDex</span>
             <a href="https://flowdexprotocol.com/terms" target="_blank" rel="noopener noreferrer" className="hover:text-ink transition-colors">
@@ -361,25 +361,24 @@ export default function DashboardShell({
 
       {/* ── Main column ── */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Mobile top bar */}
-        <header className="lg:hidden flex h-14 items-center justify-between border-b border-border bg-bg shrink-0 px-4">
-          {Logo}
+        {/* Top bar — logo on mobile, connect wallet on right always */}
+        <header className="flex h-14 items-center justify-between border-b border-border bg-bg shrink-0 px-4 lg:justify-end">
+          {/* Logo (mobile only — desktop has it in sidebar) */}
+          <div className="lg:hidden">{Logo}</div>
+          {/* Connect wallet — always top right */}
           {isConnected && address ? (
             <button
               onClick={disconnectWallet}
-              className="flex items-center gap-1.5 rounded-lg border border-border bg-card px-2.5 py-1.5"
+              className="flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 transition-colors hover:border-primary/50"
             >
-              <span className="h-1.5 w-1.5 rounded-full bg-green" />
+              <span className="h-2 w-2 rounded-full bg-green dot-pulse" />
               <Mono className="text-[11px]">{truncateWallet(address)}</Mono>
+              {detectedChainName && <span className="hidden sm:inline text-[10px] text-ink-faint">· {detectedChainName}</span>}
             </button>
           ) : (
-            <button
-              onClick={openConnectModal}
-              disabled={isConnecting}
-              className="rounded-lg border border-primary px-3 py-1.5 text-xs font-semibold text-primary"
-            >
-              {isConnecting ? '…' : 'Connect'}
-            </button>
+            <Button variant="secondary" onClick={openConnectModal} disabled={isConnecting}>
+              {isConnecting ? 'Connecting…' : 'Connect Wallet'}
+            </Button>
           )}
         </header>
 
@@ -416,8 +415,11 @@ export default function DashboardShell({
         </div>
 
         {/* Content area */}
-        <main id="dashboard-content" className="flex-1 overflow-y-auto pb-20 lg:pb-6">
-          <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
+        <main id="dashboard-content" className="flex-1 overflow-y-auto pb-20 lg:pb-6 relative">
+          {/* Decorative background blobs */}
+          <div className="bg-shape w-[340px] h-[340px] opacity-[0.14] -top-20 -right-40 hidden lg:block" style={{ background: 'var(--drop-gradient-1)' }} />
+          <div className="bg-shape w-[260px] h-[260px] opacity-[0.10] top-[40%] -left-32 hidden lg:block" style={{ background: 'var(--drop-gradient-2)', animationDelay: '-5s' }} />
+          <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 relative z-[1]">
             {/* View heading (hidden on Buy — the form speaks for itself) */}
             {activeView !== 'buy' && (
               <h1 className="mb-6 font-serif text-3xl font-light text-ink sm:text-4xl">{VIEW_TITLES[activeView]}</h1>

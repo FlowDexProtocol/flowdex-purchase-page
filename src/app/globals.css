@@ -35,6 +35,10 @@
   --grad-teal: #2dd4bf;
   --grad-violet: #a855f7;
   --grad-cyan: #4ecdc4;
+  --grad-pink: #ec4899;
+  /* Logo drop gradients — identical to landing page */
+  --drop-gradient-1: linear-gradient(135deg, var(--grad-purple), var(--grad-violet), var(--grad-blue), var(--grad-teal));
+  --drop-gradient-2: linear-gradient(135deg, var(--grad-blue), var(--grad-teal), var(--grad-cyan), var(--grad-purple));
 }
 
 @theme inline {
@@ -93,11 +97,11 @@ body {
   background: var(--color-bg);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--color-border);
+  background: rgba(255, 255, 255, 0.12);
   border-radius: 999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-card-hover);
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .dashboard-safe-bottom {
@@ -108,4 +112,107 @@ body {
   background:
     radial-gradient(60% 50% at 50% 0%, rgba(108, 92, 231, 0.16) 0%, rgba(108, 92, 231, 0) 70%),
     radial-gradient(40% 40% at 85% 15%, rgba(168, 85, 247, 0.1) 0%, rgba(168, 85, 247, 0) 70%);
+}
+
+/* ══════════════════════════════════════════════════
+   Animations — matching landing page
+   ══════════════════════════════════════════════════ */
+
+@keyframes dropFloat {
+  0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+  50% { transform: translateY(-4px) rotate(5deg) scale(1.06); }
+}
+
+@keyframes bgBlobFloat {
+  0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+  50% { transform: translateY(-13px) rotate(4deg) scale(1.04); }
+}
+
+@keyframes dotPulse {
+  0%, 100% { box-shadow: 0 0 4px var(--color-green); }
+  50% { box-shadow: 0 0 14px var(--color-green); }
+}
+
+/* ══════════════════════════════════════════════════
+   Logo drops — animated gradient blobs next to the
+   FlowDex wordmark. Matches the landing page exactly.
+   ══════════════════════════════════════════════════ */
+
+.logo-drops {
+  position: relative;
+  width: 42px;
+  height: 38px;
+  flex-shrink: 0;
+}
+
+.drop {
+  position: absolute;
+  animation: dropFloat 5s ease-in-out infinite;
+}
+
+.drop-1 {
+  width: 28px;
+  height: 24px;
+  background: var(--drop-gradient-1);
+  top: 0;
+  left: 0;
+  border-radius: 40% 60% 55% 45% / 50% 40% 60% 50%;
+  opacity: 0.9;
+}
+
+.drop-2 {
+  width: 24px;
+  height: 20px;
+  background: var(--drop-gradient-2);
+  bottom: 0;
+  right: 0;
+  border-radius: 55% 45% 40% 60% / 45% 55% 50% 50%;
+  animation-delay: -2.5s;
+  opacity: 0.85;
+}
+
+/* Smaller drops for footer */
+.f-drop-1 {
+  width: 22px;
+  height: 18px;
+  background: var(--drop-gradient-1);
+  top: 0;
+  left: 0;
+  border-radius: 40% 60% 55% 45% / 50% 40% 60% 50%;
+  opacity: 0.9;
+}
+
+.f-drop-2 {
+  width: 18px;
+  height: 15px;
+  background: linear-gradient(135deg, var(--grad-blue), var(--grad-teal), var(--grad-cyan));
+  bottom: 0;
+  right: 0;
+  border-radius: 55% 45% 40% 60% / 45% 55% 50% 50%;
+  animation-delay: -2.5s;
+  opacity: 0.85;
+}
+
+.f-logo-drops {
+  position: relative;
+  width: 32px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+/* ══════════════════════════════════════════════════
+   Decorative background blobs — floating shapes
+   ══════════════════════════════════════════════════ */
+
+.bg-shape {
+  position: absolute;
+  border-radius: 40% 60% 55% 45% / 50% 40% 60% 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  animation: bgBlobFloat 11s ease-in-out infinite;
+}
+
+/* Connected-wallet green dot pulse */
+.dot-pulse {
+  animation: dotPulse 2s infinite;
 }

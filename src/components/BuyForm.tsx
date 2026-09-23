@@ -360,7 +360,7 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {}, embedded = false 
                 <button
                   key={m.key}
                   onClick={() => setMethodKey(m.key)}
-                  className={`flex min-h-11 items-center justify-center gap-1.5 rounded-lg border px-2 py-2.5 text-xs font-semibold transition-colors ${
+                  className={`flex min-h-11 items-center justify-center gap-1.5 rounded-xl border px-2 py-2.5 text-xs font-semibold transition-colors ${
                     selected ? 'border-primary bg-primary text-white' : 'border-border bg-card text-ink hover:border-primary'
                   }`}
                 >
@@ -374,7 +374,7 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {}, embedded = false 
           <label htmlFor="usd" className="mb-2 mt-6 block text-xs font-semibold uppercase tracking-widest text-ink-dim">
             Amount (USD)
           </label>
-          <div className="flex items-center rounded-lg border border-border bg-bg-soft px-4 py-3 focus-within:border-primary/60">
+          <div className="flex items-center rounded-xl border border-border bg-bg-soft px-4 py-3 focus-within:border-primary/60">
             <span className="mr-2 text-ink-dim">$</span>
             <input
               id="usd"
@@ -389,7 +389,7 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {}, embedded = false 
           <p className="mt-2 text-xs text-ink-faint">{resolveGasNote(cmsBuy, methodKey)}</p>
 
           <div className="mt-4 grid grid-cols-2 gap-3">
-            <div className="rounded-lg border border-border bg-bg-soft p-3">
+            <div className="rounded-xl border border-border bg-bg-soft p-3">
               <p className="text-xs text-ink-dim">You send</p>
               {priceLoading ? (
                 <Spinner className="mt-1.5 h-4 w-4 text-primary" />
@@ -404,14 +404,14 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {}, embedded = false 
                 <Mono className="mt-0.5 block text-xs text-ink-faint">1 {method.crypto} = {formatUSD(price)}</Mono>
               )}
             </div>
-            <div className="rounded-lg border border-border bg-bg-soft p-3">
+            <div className="rounded-xl border border-border bg-bg-soft p-3">
               <p className="text-xs text-ink-dim">Estimated $FDP</p>
               <Mono className="mt-1 block text-base font-bold text-green">{formatTokenAmount(fdpEstimate, 2)}</Mono>
               {tierPrice > 0 && <Mono className="mt-0.5 block text-xs text-ink-faint">at {formatTokenPrice(tierPrice)}/token</Mono>}
             </div>
           </div>
           {price !== null && !priceLoading && priceDelayed && (
-            <p className="mt-2 rounded-lg bg-amber-dim px-3 py-2 text-xs text-amber">
+            <p className="mt-2 rounded-xl bg-amber-dim px-3 py-2 text-xs text-amber">
               Prices may be delayed.
             </p>
           )}
@@ -425,7 +425,7 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {}, embedded = false 
               value={referralInput}
               onChange={(e) => setReferralInput(e.target.value.toUpperCase())}
               placeholder="FDX-XXXX-XXXX"
-              className="w-full rounded-lg border border-border bg-bg-soft px-3 py-2.5 font-mono text-sm text-ink outline-none focus:border-primary/60"
+              className="w-full rounded-xl border border-border bg-bg-soft px-3 py-2.5 font-mono text-sm text-ink outline-none focus:border-primary/60"
             />
             {referralValidation.state === 'valid' && (
               <p className="mt-1.5 flex items-center gap-1.5 text-xs text-green">
@@ -461,7 +461,7 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {}, embedded = false 
               onChange={(e) => setEmailInput(e.target.value)}
               onBlur={() => setEmailTouched(true)}
               placeholder="your@email.com"
-              className="w-full rounded-lg border border-border bg-bg-soft px-3 py-2.5 text-sm text-ink outline-none focus:border-primary/60"
+              className="w-full rounded-xl border border-border bg-bg-soft px-3 py-2.5 text-sm text-ink outline-none focus:border-primary/60"
             />
             {emailTouched && !emailValid && <p className="mt-1.5 text-xs text-red">Enter a valid email address</p>}
           </div>
@@ -498,7 +498,7 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {}, embedded = false 
         <Card className="lg:col-span-2">
           <p className="text-xs font-semibold uppercase tracking-widest text-ink-dim">Payment Instructions</p>
           {balanceWarning ? (
-            <div className="mt-4 rounded-lg border border-red bg-red-dim p-4">
+            <div className="mt-4 rounded-xl border border-red bg-red-dim p-4">
               <div className="flex items-start gap-3">
                 <svg
                   width="20"
@@ -591,7 +591,7 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {}, embedded = false 
               <PurchaseStepper status={watchResult?.status ?? 'pending'} />
 
               {watchResult?.status === 'detected' && (
-                <div className="flex items-center gap-2 rounded-lg border border-primary/30 bg-primary-dim px-3 py-2 text-xs text-primary">
+                <div className="flex items-center gap-2 rounded-xl border border-primary/30 bg-primary-dim px-3 py-2 text-xs text-primary">
                   <Spinner className="h-3.5 w-3.5" />
                   Payment detected! Confirming...
                 </div>
@@ -613,14 +613,14 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {}, embedded = false 
 
               <div>
                 <p className="text-xs text-ink-dim">To this address ({method.network})</p>
-                <div className="mt-1 flex items-center gap-2 rounded-lg border border-border bg-bg-soft p-3">
+                <div className="mt-1 flex items-center gap-2 rounded-xl border border-border bg-bg-soft p-3">
                   <Mono className="flex-1 break-all text-xs text-ink">{intent.receiving_address}</Mono>
                   <CopyButton value={intent.receiving_address} />
                 </div>
               </div>
 
               <div className="flex justify-center py-1">
-                <div className="w-[150px] rounded-lg bg-white p-2.5 sm:w-[180px]">
+                <div className="w-[150px] rounded-xl bg-white p-2.5 sm:w-[180px]">
                   <QRCode
                     value={intent.receiving_address}
                     size={180}
@@ -693,14 +693,14 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {}, embedded = false 
           <Card className="lg:col-span-5">
             <p className="text-lg font-semibold text-ink">Referral Bonus Applied</p>
             <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div className="rounded-lg border border-border bg-bg-soft p-3">
+              <div className="rounded-xl border border-border bg-bg-soft p-3">
                 <p className="text-xs text-ink-dim">Your bonus (30%)</p>
                 <Mono className="mt-0.5 block text-base font-bold text-green">
                   {formatTokenAmount(referralBonusPreview.buyerBonusTokens)} $FDP
                 </Mono>
                 <p className="mt-0.5 text-xs text-ink-faint">+ {formatUSD(referralBonusPreview.buyerCredits)} Terminal Credits</p>
               </div>
-              <div className="rounded-lg border border-border bg-bg-soft p-3">
+              <div className="rounded-xl border border-border bg-bg-soft p-3">
                 <p className="text-xs text-ink-dim">Referrer bonus (15%)</p>
                 <Mono className="mt-0.5 block text-base font-bold text-primary">
                   {formatTokenAmount(referralBonusPreview.referrerBonusTokens)} $FDP

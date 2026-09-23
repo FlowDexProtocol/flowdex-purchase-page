@@ -98,10 +98,10 @@ export function Badge({
   className?: string;
 }) {
   const tones: Record<string, string> = {
-    primary: 'bg-primary-dim text-primary border border-primary-border',
-    green: 'bg-green-dim text-green border border-green/20',
-    red: 'bg-red-dim text-red border border-red/20',
-    purple: 'bg-purple-dim text-purple border border-purple/20',
+    primary: 'bg-[rgba(108,92,231,0.08)] text-[#a78bfa] border border-[rgba(108,92,231,0.25)]',
+    green: 'bg-[rgba(74,222,128,0.08)] text-[#4ade80] border border-[rgba(74,222,128,0.2)]',
+    red: 'bg-[rgba(239,68,68,0.08)] text-[#f87171] border border-[rgba(239,68,68,0.2)]',
+    purple: 'bg-[rgba(168,85,247,0.08)] text-[#c084fc] border border-[rgba(168,85,247,0.25)]',
     neutral: 'bg-white/5 text-ink-dim border border-white/[0.08]',
     amber: 'bg-amber-dim text-amber border border-amber/20',
   };
@@ -236,6 +236,6 @@ export function EmptyState({ children }: { children: ReactNode }) {
 
 export function ErrorNote({ children }: { children: ReactNode }) {
   return (
-    <div className="rounded-lg border border-red/30 bg-red-dim px-4 py-3 text-sm text-red">{children}</div>
+    <div className="rounded-xl border border-red/30 bg-red-dim px-4 py-3 text-sm text-red">{children}</div>
   );
 }

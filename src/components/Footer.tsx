@@ -81,7 +81,7 @@ export default function Footer({ cmsGlobal = {} }: { cmsGlobal?: CmsPageData }) 
       <Container className="py-14 sm:py-16">
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr]">
           <div>
-            <Link href="/#top" className="flex items-center gap-0.5">
+            <Link href="/#top" className="flex items-center gap-3 mb-2">
               {showLogoImage ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -92,8 +92,17 @@ export default function Footer({ cmsGlobal = {} }: { cmsGlobal?: CmsPageData }) 
                 />
               ) : (
                 <>
-                  <span className="text-xl font-bold text-ink sm:text-2xl">{logoMain}</span>
-                  <span className="text-xl font-bold text-primary sm:text-2xl">{logoAccent}</span>
+                  <div className="f-logo-drops">
+                    <div className="drop f-drop-1" />
+                    <div className="drop f-drop-2" />
+                  </div>
+                  <div className="leading-none">
+                    <span className="font-serif text-[22px]">
+                      <em className="font-light italic">{logoMain}</em>
+                      <span className="font-normal">{logoAccent}</span>
+                    </span>
+                    <span className="mt-px block text-[8px] uppercase tracking-[3px] text-white/20">Protocol</span>
+                  </div>
                 </>
               )}
             </Link>

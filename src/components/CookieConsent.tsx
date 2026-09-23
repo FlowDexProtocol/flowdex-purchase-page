@@ -31,7 +31,7 @@ export default function CookieConsent() {
   if (!visible) return null;
 
   return (
-    <div className="fixed bottom-6 left-6 z-50 max-w-[380px] rounded-2xl border border-white/[0.06] bg-[rgba(22,22,96,0.95)] p-5 text-xs leading-relaxed text-ink-dim backdrop-blur-2xl max-sm:bottom-[70px] max-sm:left-3 max-sm:right-3 max-sm:max-w-none">
+    <div className="fixed bottom-6 left-6 z-50 max-w-[380px] rounded-2xl border border-white/[0.06] bg-[rgba(22,22,96,0.95)] px-6 py-5 text-[13px] leading-relaxed text-white/50 backdrop-blur-2xl max-sm:bottom-[70px] max-sm:left-3 max-sm:right-3 max-sm:max-w-none">
       <p>
         We use cookies to improve your experience and analyze site traffic. By continuing, you agree
         to our use of cookies.

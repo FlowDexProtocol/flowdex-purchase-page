@@ -405,7 +405,7 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {}, embedded = false 
               )}
             </div>
             <div className="rounded-xl border border-border bg-bg-soft p-3">
-              <p className="text-xs text-ink-dim">Estimated $FDP</p>
+              <p className="text-xs text-ink-dim">Estimated FDP</p>
               <Mono className="mt-1 block text-base font-bold text-green">{formatTokenAmount(fdpEstimate, 2)}</Mono>
               {tierPrice > 0 && <Mono className="mt-0.5 block text-xs text-ink-faint">at {formatTokenPrice(tierPrice)}/token</Mono>}
             </div>
@@ -484,7 +484,7 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {}, embedded = false 
             ) : !isConnected ? (
               'Connect Wallet to Buy'
             ) : (
-              'Buy $FDP'
+              'Buy FDP'
             )}
           </Button>
 
@@ -550,7 +550,7 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {}, embedded = false 
               <div>
                 <p className="text-lg font-bold text-ink">Purchase Confirmed!</p>
                 <p className="mt-1 text-sm text-ink-dim">
-                  {formatTokenAmount(watchResult.tokens_allocated ?? intent.tokens_estimated)} $FDP allocated to your wallet
+                  {formatTokenAmount(watchResult.tokens_allocated ?? intent.tokens_estimated)} FDP allocated to your wallet
                 </p>
               </div>
               <div className="flex flex-wrap items-center justify-center gap-3">
@@ -638,7 +638,7 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {}, embedded = false 
                   <Mono className="text-ink">{formatUSD(intent.price_locked, { maximumFractionDigits: 6 })}</Mono>
                 </div>
                 <div>
-                  <p className="text-ink-dim">$FDP estimated</p>
+                  <p className="text-ink-dim">FDP estimated</p>
                   <Mono className="text-green">{formatTokenAmount(intent.tokens_estimated)}</Mono>
                 </div>
               </div>
@@ -656,11 +656,11 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {}, embedded = false 
             <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
               <div>
                 <p className="text-xs text-ink-dim">Total tokens</p>
-                <Mono className="mt-0.5 block text-base font-bold text-ink">{formatTokenAmount(vestingPreview.totalTokens)} $FDP</Mono>
+                <Mono className="mt-0.5 block text-base font-bold text-ink">{formatTokenAmount(vestingPreview.totalTokens)} FDP</Mono>
               </div>
               <div>
                 <p className="text-xs text-ink-dim">At TGE ({vestingPreview.tgePct}%)</p>
-                <Mono className="mt-0.5 block text-base font-bold text-primary">{formatTokenAmount(vestingPreview.tgeTokens)} $FDP</Mono>
+                <Mono className="mt-0.5 block text-base font-bold text-primary">{formatTokenAmount(vestingPreview.tgeTokens)} FDP</Mono>
                 <p className="mt-0.5 text-xs text-ink-faint">Available immediately when tier closes</p>
               </div>
               <div>
@@ -670,7 +670,7 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {}, embedded = false 
               </div>
               <div>
                 <p className="text-xs text-ink-dim">Vesting ({vestingPreview.vestMonths} months)</p>
-                <Mono className="mt-0.5 block text-base font-bold text-ink">{formatTokenAmount(vestingPreview.remainingTokens)} $FDP</Mono>
+                <Mono className="mt-0.5 block text-base font-bold text-ink">{formatTokenAmount(vestingPreview.remainingTokens)} FDP</Mono>
                 <p className="mt-0.5 text-xs text-ink-faint">Released linearly after the cliff</p>
               </div>
             </div>
@@ -696,21 +696,21 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {}, embedded = false 
               <div className="rounded-xl border border-border bg-bg-soft p-3">
                 <p className="text-xs text-ink-dim">Your bonus (30%)</p>
                 <Mono className="mt-0.5 block text-base font-bold text-green">
-                  {formatTokenAmount(referralBonusPreview.buyerBonusTokens)} $FDP
+                  {formatTokenAmount(referralBonusPreview.buyerBonusTokens)} FDP
                 </Mono>
                 <p className="mt-0.5 text-xs text-ink-faint">+ {formatUSD(referralBonusPreview.buyerCredits)} Terminal Credits</p>
               </div>
               <div className="rounded-xl border border-border bg-bg-soft p-3">
                 <p className="text-xs text-ink-dim">Referrer bonus (15%)</p>
                 <Mono className="mt-0.5 block text-base font-bold text-primary">
-                  {formatTokenAmount(referralBonusPreview.referrerBonusTokens)} $FDP
+                  {formatTokenAmount(referralBonusPreview.referrerBonusTokens)} FDP
                 </Mono>
                 <p className="mt-0.5 text-xs text-ink-faint">+ {formatUSD(referralBonusPreview.referrerCredits)} Terminal Credits</p>
               </div>
             </div>
             <p className="mt-4 text-xs text-ink-dim">
               Tokens burned:{' '}
-              <span className="font-semibold text-ink">{formatTokenAmount(referralBonusPreview.totalBurned)} $FDP</span> permanently
+              <span className="font-semibold text-ink">{formatTokenAmount(referralBonusPreview.totalBurned)} FDP</span> permanently
               removed from supply 🔥
             </p>
             <p className="mt-1.5 text-xs text-ink-faint">Terminal Credits redeemable when the Intelligence Terminal launches.</p>
@@ -735,7 +735,7 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {}, embedded = false 
     <Section id="buy">
       <SectionHeading
         eyebrow="Presale"
-        title={cms(cmsBuy, 'form', 'title', 'Buy $FDP')}
+        title={cms(cmsBuy, 'form', 'title', 'Buy FDP')}
         description={cms(cmsBuy, 'form', 'subtitle', 'Lock in your price for 15 minutes and receive a deposit address.')}
       />
       {content}

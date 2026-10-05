@@ -46,7 +46,7 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { key: 'buy', label: 'Buy $FDP', mobileOrder: 1 },
+  { key: 'buy', label: 'Buy FDP', mobileOrder: 1 },
   { key: 'portfolio', label: 'Portfolio', requiresWallet: true, mobileOrder: 2 },
   { key: 'referral', label: 'Referral', requiresWallet: true, mobileOrder: 3 },
   { key: 'claims', label: 'Claims', requiresWallet: true },
@@ -61,7 +61,7 @@ const MOBILE_NAV = NAV_ITEMS.filter((v) => v.mobileOrder).sort(
 );
 
 const VIEW_TITLES: Record<View, string> = {
-  buy: 'Buy $FDP',
+  buy: 'Buy FDP',
   portfolio: 'Portfolio',
   referral: 'Referral Program',
   claims: 'Token Claims',
@@ -466,7 +466,7 @@ export default function DashboardShell({
               }`}
             >
               <NavIcon type={item.key} className="h-5 w-5" />
-              <span className="truncate">{item.label.replace(' $FDP', '')}</span>
+              <span className="truncate">{item.label.replace(' FDP', '')}</span>
             </button>
           ))}
         </div>

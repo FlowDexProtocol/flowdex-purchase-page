@@ -83,7 +83,7 @@ export default function PortfolioTab() {
     const eligible = claims.find((c) => c.status === 'eligible');
     let nextUnlock: { label: string } | null = null;
     if (eligible) {
-      nextUnlock = { label: `${formatTokenAmount(toNum(eligible.total_claimable))} $FDP ready to claim now (${eligible.tier_name || `Tier ${eligible.tier_id}`})` };
+      nextUnlock = { label: `${formatTokenAmount(toNum(eligible.total_claimable))} FDP ready to claim now (${eligible.tier_name || `Tier ${eligible.tier_id}`})` };
     } else {
       const now = new Date();
       let nearestCliff: { date: Date; tierName: string } | null = null;
@@ -130,7 +130,7 @@ export default function PortfolioTab() {
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <Card>
-          <p className="text-xs uppercase tracking-widest text-ink-dim">Total $FDP</p>
+          <p className="text-xs uppercase tracking-widest text-ink-dim">Total FDP</p>
           <Mono className="mt-1.5 block text-xl font-bold text-primary">{formatTokenAmount(profile.total_tokens)}</Mono>
         </Card>
         <Card>
@@ -142,7 +142,7 @@ export default function PortfolioTab() {
           <Mono className="mt-1.5 block text-xl font-bold text-ink">{profile.total_purchases}</Mono>
         </Card>
         <Card>
-          <p className="text-xs uppercase tracking-widest text-ink-dim">Bonus $FDP</p>
+          <p className="text-xs uppercase tracking-widest text-ink-dim">Bonus FDP</p>
           <Mono className="mt-1.5 block text-xl font-bold text-green">{formatTokenAmount(profile.total_bonus_tokens)}</Mono>
         </Card>
       </div>
@@ -153,23 +153,23 @@ export default function PortfolioTab() {
           <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3">
             <div>
               <p className="text-xs text-ink-dim">Purchased tokens</p>
-              <Mono className="mt-0.5 block text-base font-bold text-ink">{formatTokenAmount(vesting.purchasedTokens)} $FDP</Mono>
+              <Mono className="mt-0.5 block text-base font-bold text-ink">{formatTokenAmount(vesting.purchasedTokens)} FDP</Mono>
             </div>
             {vesting.referralBonusTokens > 0 && (
               <div>
                 <p className="text-xs text-ink-dim">Referral bonus tokens</p>
-                <Mono className="mt-0.5 block text-base font-bold text-purple">{formatTokenAmount(vesting.referralBonusTokens)} $FDP</Mono>
+                <Mono className="mt-0.5 block text-base font-bold text-purple">{formatTokenAmount(vesting.referralBonusTokens)} FDP</Mono>
               </div>
             )}
             {vesting.purchaseBonusTokens > 0 && (
               <div>
                 <p className="text-xs text-ink-dim">Purchase bonus tokens</p>
-                <Mono className="mt-0.5 block text-base font-bold text-primary">{formatTokenAmount(vesting.purchaseBonusTokens)} $FDP</Mono>
+                <Mono className="mt-0.5 block text-base font-bold text-primary">{formatTokenAmount(vesting.purchaseBonusTokens)} FDP</Mono>
               </div>
             )}
             <div>
               <p className="text-xs text-ink-dim">Total</p>
-              <Mono className="mt-0.5 block text-base font-bold text-ink">{formatTokenAmount(vesting.totalTokens)} $FDP</Mono>
+              <Mono className="mt-0.5 block text-base font-bold text-ink">{formatTokenAmount(vesting.totalTokens)} FDP</Mono>
             </div>
           </div>
 
@@ -209,7 +209,7 @@ export default function PortfolioTab() {
                 <tr className="text-xs uppercase tracking-wider text-ink-dim">
                   <th className="px-2 pb-2 font-medium">Date</th>
                   <th className="px-2 pb-2 font-medium">Paid</th>
-                  <th className="px-2 pb-2 font-medium">$FDP</th>
+                  <th className="px-2 pb-2 font-medium">FDP</th>
                   <th className="px-2 pb-2 font-medium">Tier</th>
                   <th className="px-2 pb-2 font-medium">Status</th>
                   <th className="px-2 pb-2 font-medium">Tx Hash</th>

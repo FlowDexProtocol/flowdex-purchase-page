@@ -9,7 +9,7 @@ import { isSafeLinkUrl, sanitizeImageUrl } from '@/lib/url-safety';
 // Absolute paths (not bare "#buy") so these work from any route — see the
 // same fix in Header.tsx's NAV_LINKS for why a bare hash breaks off-homepage.
 const LINKS = [
-  { label: 'Buy $FDP', href: '/#buy' },
+  { label: 'Buy FDP', href: '/#buy' },
   { label: 'Dashboard', href: '/#dashboard' },
   { label: 'Leaderboard', href: '/#leaderboard' },
   { label: 'Tiers', href: '/#tiers' },
@@ -21,7 +21,7 @@ const LEGAL_LINKS = [{ label: 'Terms of Service', href: 'https://flowdexprotocol
 
 // Copied verbatim from flowdex-landing's Footer so the icon-button social
 // row in the brand column renders identically on both sites.
-function SocialIcon({ type }: { type: 'x' | 'telegram' | 'discord' }) {
+function SocialIcon({ type }: { type: 'x' | 'telegram' }) {
   const common = { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'currentColor' } as const;
   if (type === 'x') {
     return (
@@ -30,16 +30,9 @@ function SocialIcon({ type }: { type: 'x' | 'telegram' | 'discord' }) {
       </svg>
     );
   }
-  if (type === 'telegram') {
-    return (
-      <svg {...common}>
-        <path d="M21.9 3.5 2.6 11.1c-1.3.5-1.3 1.2-.2 1.6l4.9 1.5 1.9 5.8c.2.6.5.8.9.8s.5-.1.8-.4l2.4-2.3 5 3.7c.9.5 1.5.2 1.7-.8L23 5c.3-1.2-.4-1.8-1.1-1.5ZM8.5 14.9l9.6-6.4c.4-.3.8-.1.5.2l-8 7.5-.3 3.2-1.3-4.5Z" />
-      </svg>
-    );
-  }
   return (
     <svg {...common}>
-      <path d="M20.3 5.3A18 18 0 0 0 15.7 4l-.3.6a15 15 0 0 1 4 1.4 16.9 16.9 0 0 0-14.8 0 15 15 0 0 1 4-1.4L8.3 4a18 18 0 0 0-4.6 1.3C1 9.6.3 13.8.6 18a17.9 17.9 0 0 0 5.4 2.7l.8-1.3a11.6 11.6 0 0 1-1.8-.9l.5-.4a12.9 12.9 0 0 0 11 0l.5.4a11.6 11.6 0 0 1-1.8.9l.8 1.3A17.8 17.8 0 0 0 21.4 18c.4-4.8-.8-9-4.7-12.7ZM9 15.2c-.9 0-1.6-.8-1.6-1.8S8.1 11.6 9 11.6s1.6.8 1.6 1.8-.7 1.8-1.6 1.8Zm6 0c-.9 0-1.6-.8-1.6-1.8s.7-1.8 1.6-1.8 1.6.8 1.6 1.8-.7 1.8-1.6 1.8Z" />
+      <path d="M21.9 3.5 2.6 11.1c-1.3.5-1.3 1.2-.2 1.6l4.9 1.5 1.9 5.8c.2.6.5.8.9.8s.5-.1.8-.4l2.4-2.3 5 3.7c.9.5 1.5.2 1.7-.8L23 5c.3-1.2-.4-1.8-1.1-1.5ZM8.5 14.9l9.6-6.4c.4-.3.8-.1.5.2l-8 7.5-.3 3.2-1.3-4.5Z" />
     </svg>
   );
 }
@@ -64,14 +57,6 @@ export default function Footer({ cmsGlobal = {} }: { cmsGlobal?: CmsPageData }) 
       key: 'telegram' as const,
       label: 'Telegram',
       href: safeSocialUrl(cms(cmsGlobal, 'social', 'telegram', 'https://t.me/flowdexprotocol'), 'https://t.me/flowdexprotocol'),
-    },
-    {
-      key: 'discord' as const,
-      label: 'Discord',
-      href: safeSocialUrl(
-        cms(cmsGlobal, 'social', 'discord', 'https://discord.gg/flowdexprotocol'),
-        'https://discord.gg/flowdexprotocol'
-      ),
     },
     { key: 'docs' as const, label: 'Docs', href: 'https://docs.flowdexprotocol.com' },
   ];
@@ -184,7 +169,7 @@ export default function Footer({ cmsGlobal = {} }: { cmsGlobal?: CmsPageData }) 
               cmsGlobal,
               'footer',
               'disclaimer',
-              'This is not financial advice. $FDP is a utility token. Cryptocurrency purchases carry risk, including total loss of funds. Presale tokens are subject to a cliff and vesting schedule and may not be immediately liquid. Nothing on this page constitutes an offer or solicitation to sell securities in any jurisdiction where such an offer would be unlawful.'
+              'This is not financial advice. FDP is a utility token. Cryptocurrency purchases carry risk, including total loss of funds. Presale tokens are subject to a cliff and vesting schedule and may not be immediately liquid. Nothing on this page constitutes an offer or solicitation to sell securities in any jurisdiction where such an offer would be unlawful.'
             )}
           </span>
         </div>

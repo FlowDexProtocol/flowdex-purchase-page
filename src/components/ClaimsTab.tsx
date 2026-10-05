@@ -116,12 +116,12 @@ export default function ClaimsTab() {
   if (groups.length === 0) {
     return (
       <EmptyState>
-        <p>No purchases yet. Buy $FDP to see your vesting schedule and claims here.</p>
+        <p>No purchases yet. Buy FDP to see your vesting schedule and claims here.</p>
         <Link
           href="/#buy"
           className="mt-4 inline-flex min-h-11 items-center justify-center rounded-full bg-primary px-7 py-3 text-[11px] font-medium uppercase tracking-[0.15em] text-white hover:bg-primary/90 transition-all hover:-translate-y-0.5"
         >
-          Buy $FDP
+          Buy FDP
         </Link>
       </EmptyState>
     );
@@ -180,7 +180,7 @@ function TierClaimCard({
       <Card>
         <p className="text-lg font-semibold text-ink">{tierName}</p>
         <p className="mt-2 text-sm text-ink-dim">
-          Your tokens: <Mono className="font-semibold text-ink">{formatTokenAmount(totalTokens)}</Mono> $FDP
+          Your tokens: <Mono className="font-semibold text-ink">{formatTokenAmount(totalTokens)}</Mono> FDP
         </p>
         {bonusTokens > 0 && (
           <p className="mt-0.5 text-xs text-ink-faint">
@@ -188,7 +188,7 @@ function TierClaimCard({
           </p>
         )}
         <p className="mt-2 text-xs text-ink-dim">
-          TGE unlock: {tgePct}% = <Mono>{formatTokenAmount(tgeTokens)}</Mono> $FDP
+          TGE unlock: {tgePct}% = <Mono>{formatTokenAmount(tgeTokens)}</Mono> FDP
         </p>
         <p className="mt-3">
           <Badge tone="neutral">Tier still active</Badge>
@@ -226,7 +226,7 @@ function TierClaimCard({
           <p className="text-lg font-semibold text-ink">{tierName}</p>
           <Badge tone="green">CLAIMABLE</Badge>
         </div>
-        <Mono className="mt-3 block text-3xl font-extrabold text-green">{formatTokenAmount(tgeTokens)} $FDP</Mono>
+        <Mono className="mt-3 block text-3xl font-extrabold text-green">{formatTokenAmount(tgeTokens)} FDP</Mono>
         <p className="text-xs text-ink-faint">ready to claim</p>
         <Button className="mt-4 w-full" onClick={onClaim} disabled={claiming}>
           {claiming ? 'Claiming…' : 'Claim Now'}
@@ -234,14 +234,14 @@ function TierClaimCard({
 
         <div className="mt-5 space-y-1.5 border-t border-border pt-4 text-xs">
           <p className="text-ink-dim">
-            TGE: <Mono className="text-green">{formatTokenAmount(tgeTokens)} $FDP</Mono> —{' '}
+            TGE: <Mono className="text-green">{formatTokenAmount(tgeTokens)} FDP</Mono> —{' '}
             <span className="font-semibold text-green">READY NOW</span>
           </p>
           <p className="text-ink-dim">
             Cliff ends: <span className="text-ink">{formatDate(cliffEnd.toISOString())}</span>
           </p>
           <p className="text-ink-dim">
-            Vesting: <Mono className="text-ink">{formatTokenAmount(remainingTokens)}</Mono> $FDP over {tier.vest_months} months
+            Vesting: <Mono className="text-ink">{formatTokenAmount(remainingTokens)}</Mono> FDP over {tier.vest_months} months
             after cliff
           </p>
           <p className="text-ink-dim">
@@ -273,7 +273,7 @@ function TierClaimCard({
           <Badge tone="amber">FULLY UNLOCKED</Badge>
         </div>
         <p className="mt-3 text-sm text-ink-dim">
-          All <Mono className="font-semibold text-ink">{formatTokenAmount(totalTokens)}</Mono> $FDP unlocked and available.
+          All <Mono className="font-semibold text-ink">{formatTokenAmount(totalTokens)}</Mono> FDP unlocked and available.
         </p>
       </Card>
     );
@@ -286,7 +286,7 @@ function TierClaimCard({
         <Badge tone="neutral">✓ CLAIMED</Badge>
       </div>
       <p className="mt-2 text-sm text-green">
-        Claimed <Mono className="font-semibold">{formatTokenAmount(tgeTokens)}</Mono> $FDP on {formatDate(claim.claimed_at)}
+        Claimed <Mono className="font-semibold">{formatTokenAmount(tgeTokens)}</Mono> FDP on {formatDate(claim.claimed_at)}
       </p>
 
       <div className="mt-4">

@@ -82,7 +82,7 @@ export default function StatusChecker({ cmsGlobal = {} }: { cmsGlobal?: CmsPageD
                     <Mono className="text-ink">{formatUSD(result.usd_value)}</Mono>
                   </div>
                   <div>
-                    <p className="text-xs text-ink-dim">$FDP Allocated</p>
+                    <p className="text-xs text-ink-dim">FDP Allocated</p>
                     <Mono className="text-green">{formatTokenAmount(result.tokens_allocated)}</Mono>
                   </div>
                   <div>

@@ -36,7 +36,7 @@ export function downloadReceiptPdf(receipt: PurchaseReceipt): void {
 
   line('Allocation', { bold: true, gap: 18 });
   line(`Tier: ${receipt.tier_name} (${formatUSD(receipt.tier_price, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}/token)`);
-  line(`$FDP Allocated: ${formatTokenAmount(receipt.tokens_allocated)}`);
+  line(`FDP Allocated: ${formatTokenAmount(receipt.tokens_allocated)}`);
   if (receipt.bonus_tokens && toNum(receipt.bonus_tokens) > 0) {
     line(`Bonus Tokens: ${formatTokenAmount(receipt.bonus_tokens)}`);
   }

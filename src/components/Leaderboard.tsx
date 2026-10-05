@@ -43,7 +43,7 @@ export default function Leaderboard({ embedded = false }: { embedded?: boolean }
                 </div>
                 <div className="text-right">
                   <Mono className="block text-sm font-bold text-ink">{formatUSD(entry.total_usd)}</Mono>
-                  <Mono className="block text-xs text-ink-faint">{formatTokenAmount(entry.total_tokens)} $FDP</Mono>
+                  <Mono className="block text-xs text-ink-faint">{formatTokenAmount(entry.total_tokens)} FDP</Mono>
                 </div>
               </div>
             ))}

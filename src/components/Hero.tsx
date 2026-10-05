@@ -15,7 +15,7 @@ export default function Hero({ cmsBuy = {} }: { cmsBuy?: CmsPageData }) {
     <div id="top" className="relative overflow-hidden bg-radial-glow border-b border-border">
       <Container className="py-16 sm:py-24 text-center">
         <Badge tone="primary" className="mb-6">
-          {cms(cmsBuy, 'hero', 'badge', '$FDP Presale Live')}
+          {cms(cmsBuy, 'hero', 'badge', 'FDP Presale Live')}
         </Badge>
 
         <h1 className="mx-auto max-w-3xl text-4xl sm:text-6xl font-bold tracking-tight text-ink">
@@ -28,7 +28,7 @@ export default function Hero({ cmsBuy = {} }: { cmsBuy?: CmsPageData }) {
 
         <p className="mx-auto mt-5 max-w-xl text-sm sm:text-base text-ink-dim">
           FlowDex Protocol unifies crypto, stocks, forex, and commodities into a single intelligent trading layer.
-          $FDP powers the network.
+          FDP powers the network.
         </p>
 
         <div className="mx-auto mt-10 max-w-xl">
@@ -81,7 +81,7 @@ export default function Hero({ cmsBuy = {} }: { cmsBuy?: CmsPageData }) {
                 href="/#buy"
                 className="mt-5 flex w-full items-center justify-center rounded-full bg-primary px-7 py-3 text-[11px] font-medium uppercase tracking-[0.15em] text-white hover:bg-primary/90 transition-all hover:-translate-y-0.5"
               >
-                Buy $FDP Now
+                Buy FDP Now
               </Link>
             </div>
           ) : null}

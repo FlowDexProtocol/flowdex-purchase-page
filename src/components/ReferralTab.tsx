@@ -56,13 +56,13 @@ export default function ReferralTab() {
 
   const code = stats?.referral_code || liveReferralCode;
   const shareUrl = typeof window !== 'undefined' && code ? `${window.location.origin}${window.location.pathname}?ref=${code}` : '';
-  const shareMessage = `Buy $FDP at the lowest presale price. Use my referral link for a 30% bonus: ${shareUrl}`;
+  const shareMessage = `Buy FDP at the lowest presale price. Use my referral link for a 30% bonus: ${shareUrl}`;
 
   async function handleShare() {
     if (!shareUrl) return;
     if (typeof navigator !== 'undefined' && 'share' in navigator) {
       try {
-        await navigator.share({ title: 'FlowDex Protocol', text: 'Join the $FDP presale with my referral link', url: shareUrl });
+        await navigator.share({ title: 'FlowDex Protocol', text: 'Join the FDP presale with my referral link', url: shareUrl });
         return;
       } catch {
         // user cancelled or share unsupported — fall through to copy
@@ -107,7 +107,7 @@ export default function ReferralTab() {
             </a>
             <a
               href={`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(
-                'Buy $FDP at the lowest presale price. Use my referral link for a 30% bonus:'
+                'Buy FDP at the lowest presale price. Use my referral link for a 30% bonus:'
               )}`}
               target="_blank"
               rel="noopener noreferrer"
@@ -146,7 +146,7 @@ export default function ReferralTab() {
         <Card>
           <p className="text-xs uppercase tracking-widest text-ink-dim">Your Token Earnings</p>
           <Mono className="mt-1.5 block text-xl font-bold text-green">
-            {formatTokenAmount(stats?.total_referral_earnings_tokens ?? 0)} $FDP
+            {formatTokenAmount(stats?.total_referral_earnings_tokens ?? 0)} FDP
           </Mono>
         </Card>
         <Card>
@@ -210,7 +210,7 @@ export default function ReferralTab() {
         <p className="text-lg font-semibold text-ink">Token Burn Summary</p>
         <p className="mt-2 text-sm text-ink-dim">
           Total tokens burned from your referrals:{' '}
-          <Mono className="font-semibold text-ink">{formatTokenAmount(stats?.total_tokens_burned ?? 0)}</Mono> $FDP 🔥
+          <Mono className="font-semibold text-ink">{formatTokenAmount(stats?.total_tokens_burned ?? 0)}</Mono> FDP 🔥
         </p>
         <p className="mt-1.5 text-xs text-ink-faint">Burning reduces total supply, increasing value for all holders.</p>
       </Card>

@@ -26,9 +26,9 @@ const jetbrainsMono = JetBrains_Mono({
   display: 'swap',
 });
 
-const PAGE_TITLE = 'Buy $FDP — FlowDex Protocol Presale';
+const PAGE_TITLE = 'Buy FDP — FlowDex Protocol Presale';
 const PAGE_DESCRIPTION =
-  'Join the FlowDex Protocol presale. Buy $FDP, track your portfolio, earn referral rewards, and stake for 40% of protocol fees.';
+  'Join the FlowDex Protocol presale. Buy FDP, track your portfolio, earn referral rewards, and stake for 40% of protocol fees.';
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

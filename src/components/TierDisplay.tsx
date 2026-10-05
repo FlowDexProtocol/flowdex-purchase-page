@@ -4,7 +4,7 @@ import { useTierCurrent } from '@/lib/hooks';
 import { formatPercentage, formatTokenPrice, formatUSD, toNum } from '@/lib/format';
 import { Badge, Card, EmptyState, Mono, Section, SectionHeading, Spinner } from './ui';
 
-const LISTING_PRICE = 0.05;
+const LISTING_PRICE = 0.50;
 
 export default function TierDisplay() {
   const { data: tier, loading, error } = useTierCurrent();

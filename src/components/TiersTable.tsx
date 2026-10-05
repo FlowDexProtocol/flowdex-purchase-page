@@ -74,7 +74,7 @@ export default function TiersTable({ embedded = false }: { embedded?: boolean } 
 
   return (
     <Section id="tiers">
-      <SectionHeading eyebrow="Full Schedule" title="All Presale Tiers" description="All 8 tiers, pricing, hard caps, and vesting terms." />
+      <SectionHeading eyebrow="Full Schedule" title="All Presale Tiers" description="All 20 tiers, pricing, hard caps, and vesting terms." />
       {content}
     </Section>
   );

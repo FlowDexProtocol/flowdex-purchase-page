@@ -7,6 +7,7 @@ import { useWallet } from '@/context/wallet-context';
 import { useTierCurrent } from '@/lib/hooks';
 import { ApiError, applyReferral, getPrice, getPurchaseReceipt, getPurchaseWatch, postPurchaseIntent } from '@/lib/api';
 import { checkEvmBalance } from '@/lib/balance';
+import { supportsDirectSend, sendEvmTransaction, isUserRejection } from '@/lib/send';
 import { PAYMENT_METHODS, type PaymentMethodKey } from '@/lib/types';
 import { formatCrypto, formatDuration, formatTokenPrice, formatTokenAmount, formatUSD, toNum } from '@/lib/format';
 import { downloadReceiptPdf } from '@/lib/receipt';
@@ -81,6 +82,15 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {}, embedded = false 
   const [watchResult, setWatchResult] = useState<PurchaseWatchResponse | null>(null);
   const [downloadingReceipt, setDownloadingReceipt] = useState(false);
   const [receiptError, setReceiptError] = useState<string | null>(null);
+
+  // Direct wallet send state — only used for EVM methods that support it.
+  // 'idle'              = no wallet send attempted yet
+  // 'awaiting-approval' = MetaMask/wallet popup is open, waiting for user
+  // 'submitted'         = user approved, tx submitted to network
+  // 'rejected'          = user rejected the popup → fall back to address/QR
+  const [walletSendState, setWalletSendState] = useState<'idle' | 'awaiting-approval' | 'submitted' | 'rejected'>('idle');
+  const [walletTxHash, setWalletTxHash] = useState<string | null>(null);
+  const [walletSendError, setWalletSendError] = useState<string | null>(null);
 
   const [referralInput, setReferralInput] = useState('');
   const referralSeededRef = useRef(false);
@@ -241,7 +251,7 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {}, embedded = false 
     applyReferral({ buyer_wallet: address, referral_code: effectiveReferralCode }).catch(() => {});
   }, [address, effectiveReferralCode]);
 
-  async function createIntent() {
+  async function createIntent(): Promise<PurchaseIntentResponse | null> {
     setSubmitting(true);
     setSubmitError(null);
     try {
@@ -259,12 +269,14 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {}, embedded = false 
       setIntentUsdAmount(usdNumber);
       setIntentReferralCode(effectiveReferralCode);
       setIntentTier(tier && !tier.message ? tier : null);
+      return res;
     } catch (err) {
       if (err instanceof ApiError) {
         setSubmitError(err.message);
       } else {
         setSubmitError('Something went wrong. Please try again.');
       }
+      return null;
     } finally {
       setSubmitting(false);
     }
@@ -274,6 +286,9 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {}, embedded = false 
     setSubmitError(null);
     setIntent(null);
     setBalanceWarning(null);
+    setWalletSendState('idle');
+    setWalletTxHash(null);
+    setWalletSendError(null);
 
     if (!isConnected || !address) {
       openConnectModal();
@@ -303,12 +318,72 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {}, embedded = false 
       return;
     }
 
-    await createIntent();
+    const intentRes = await createIntent();
+    if (!intentRes) return;
+
+    // For EVM methods with a connected wallet provider, trigger a direct
+    // wallet transaction (MetaMask popup) instead of showing the address/QR.
+    // If the user rejects the popup, fall back to the address/QR flow so
+    // they can still send manually.
+    if (supportsDirectSend(method.key, method.chain) && walletProvider) {
+      setWalletSendState('awaiting-approval');
+      try {
+        const { txHash } = await sendEvmTransaction(
+          method.key,
+          walletProvider,
+          intentRes.receiving_address,
+          intentRes.crypto_amount
+        );
+        setWalletTxHash(txHash);
+        setWalletSendState('submitted');
+      } catch (err) {
+        if (isUserRejection(err)) {
+          // User closed the wallet popup — fall back to showing the
+          // deposit address so they can send manually.
+          setWalletSendState('rejected');
+        } else {
+          // Network/RPC error — fall back to address/QR, show the error.
+          setWalletSendState('rejected');
+          setWalletSendError(
+            err instanceof Error ? err.message : 'Transaction failed. You can still send manually using the address below.'
+          );
+        }
+      }
+    }
   }
 
-  function handleProceedAnyway() {
+  async function handleProceedAnyway() {
     setBalanceWarning(null);
-    createIntent();
+    setWalletSendState('idle');
+    setWalletTxHash(null);
+    setWalletSendError(null);
+
+    const intentRes = await createIntent();
+    if (!intentRes) return;
+
+    // Same direct-send logic as handleBuy — trigger wallet popup for EVM methods.
+    if (supportsDirectSend(method.key, method.chain) && walletProvider) {
+      setWalletSendState('awaiting-approval');
+      try {
+        const { txHash } = await sendEvmTransaction(
+          method.key,
+          walletProvider,
+          intentRes.receiving_address,
+          intentRes.crypto_amount
+        );
+        setWalletTxHash(txHash);
+        setWalletSendState('submitted');
+      } catch (err) {
+        if (isUserRejection(err)) {
+          setWalletSendState('rejected');
+        } else {
+          setWalletSendState('rejected');
+          setWalletSendError(
+            err instanceof Error ? err.message : 'Transaction failed. You can still send manually using the address below.'
+          );
+        }
+      }
+    }
   }
 
   const vestingPreview = useMemo(() => {
@@ -611,26 +686,65 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {}, embedded = false 
                 </Mono>
               </div>
 
-              <div>
-                <p className="text-xs text-ink-dim">To this address ({method.network})</p>
-                <div className="mt-1 flex items-center gap-2 rounded-xl border border-border bg-bg-soft p-3">
-                  <Mono className="flex-1 break-all text-xs text-ink">{intent.receiving_address}</Mono>
-                  <CopyButton value={intent.receiving_address} />
+              {/* Direct wallet send states — shown for EVM methods that triggered a wallet popup */}
+              {walletSendState === 'awaiting-approval' && (
+                <div className="flex flex-col items-center gap-3 rounded-xl border border-primary/30 bg-primary-dim py-6 text-center">
+                  <Spinner className="h-6 w-6 text-primary" />
+                  <div>
+                    <p className="text-sm font-semibold text-ink">Approve in your wallet</p>
+                    <p className="mt-1 text-xs text-ink-dim">
+                      Confirm the transaction in your wallet to send {intent.crypto_amount} {method.crypto}
+                    </p>
+                  </div>
                 </div>
-              </div>
+              )}
 
-              <div className="flex justify-center py-1">
-                <div className="w-[150px] rounded-xl bg-white p-2.5 sm:w-[180px]">
-                  <QRCode
-                    value={intent.receiving_address}
-                    size={180}
-                    bgColor="#FFFFFF"
-                    fgColor="#000000"
-                    style={{ height: 'auto', maxWidth: '100%', width: '100%' }}
-                    viewBox="0 0 180 180"
-                  />
+              {walletSendState === 'submitted' && !watchResult?.status && (
+                <div className="flex flex-col items-center gap-3 rounded-xl border border-primary/30 bg-primary-dim py-6 text-center">
+                  <Spinner className="h-6 w-6 text-primary" />
+                  <div>
+                    <p className="text-sm font-semibold text-ink">Transaction submitted</p>
+                    <p className="mt-1 text-xs text-ink-dim">
+                      Waiting for on-chain confirmation…
+                    </p>
+                    {walletTxHash && (
+                      <Mono className="mt-2 block break-all text-xs text-ink-faint">{walletTxHash}</Mono>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {walletSendError && (
+                <div className="rounded-xl border border-red/30 bg-red-dim px-3 py-2 text-xs text-red">
+                  {walletSendError}
+                </div>
+              )}
+
+              {/* Address/QR fallback — shown for non-EVM methods, or when user rejected the wallet popup */}
+              {(walletSendState === 'idle' || walletSendState === 'rejected') && (
+                <>
+                  <div>
+                    <p className="text-xs text-ink-dim">To this address ({method.network})</p>
+                    <div className="mt-1 flex items-center gap-2 rounded-xl border border-border bg-bg-soft p-3">
+                      <Mono className="flex-1 break-all text-xs text-ink">{intent.receiving_address}</Mono>
+                      <CopyButton value={intent.receiving_address} />
+                    </div>
+                  </div>
+
+                  <div className="flex justify-center py-1">
+                    <div className="w-[150px] rounded-xl bg-white p-2.5 sm:w-[180px]">
+                      <QRCode
+                        value={intent.receiving_address}
+                        size={180}
+                        bgColor="#FFFFFF"
+                        fgColor="#000000"
+                        style={{ height: 'auto', maxWidth: '100%', width: '100%' }}
+                        viewBox="0 0 180 180"
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
 
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div>
@@ -644,7 +758,9 @@ export default function BuyForm({ cmsBuy = {}, cmsGlobal = {}, embedded = false 
               </div>
 
               <p className="text-xs text-ink-faint">
-                Send only {method.crypto} on {method.network}. Your purchase confirms automatically once the payment is detected on-chain.
+                {walletSendState === 'submitted'
+                  ? `Your purchase confirms automatically once the payment is confirmed on-chain.`
+                  : `Send only ${method.crypto} on ${method.network}. Your purchase confirms automatically once the payment is detected on-chain.`}
               </p>
             </div>
           )}

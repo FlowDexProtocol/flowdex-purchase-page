@@ -1,7 +1,7 @@
 'use client';
 
 import { useTierCurrent } from '@/lib/hooks';
-import { formatPercentage, formatTokenPrice, formatUSD, toNum } from '@/lib/format';
+import { formatPercentage, formatTokenPrice, toNum } from '@/lib/format';
 import { Badge, Card, EmptyState, Mono, Section, SectionHeading, Spinner } from './ui';
 
 const LISTING_PRICE = 0.50;
@@ -55,10 +55,6 @@ export default function TierDisplay() {
             <div>
               <p className="text-xs uppercase tracking-widest text-ink-dim">Vesting</p>
               <p className="mt-1 text-sm font-semibold text-ink">{tier.vest_months} month{tier.vest_months === 1 ? '' : 's'}</p>
-            </div>
-            <div>
-              <p className="text-xs uppercase tracking-widest text-ink-dim">Hard Cap</p>
-              <Mono className="mt-1 block text-sm font-semibold text-ink">{formatUSD(tier.hard_cap_usd)}</Mono>
             </div>
             <div className="ml-auto flex items-center gap-2">
               {tier.claims_open && <Badge tone="green">Claims Open</Badge>}

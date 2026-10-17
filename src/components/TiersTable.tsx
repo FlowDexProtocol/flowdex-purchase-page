@@ -3,7 +3,7 @@
 import { usePolling } from '@/lib/hooks';
 import { getTiers } from '@/lib/api';
 import type { Tier } from '@/lib/types';
-import { formatPercentage, formatTokenPrice, formatUSD } from '@/lib/format';
+import { formatPercentage, formatTokenPrice } from '@/lib/format';
 import { Badge, Card, EmptyState, Mono, Section, SectionHeading, Spinner } from './ui';
 
 export default function TiersTable({ embedded = false }: { embedded?: boolean } = {}) {
@@ -30,7 +30,6 @@ export default function TiersTable({ embedded = false }: { embedded?: boolean } 
                 <tr className="border-b border-border text-xs uppercase tracking-wider text-ink-dim">
                   <th className="px-5 py-3 font-medium sm:px-6">Tier</th>
                   <th className="px-5 py-3 font-medium sm:px-6">Price</th>
-                  <th className="px-5 py-3 font-medium sm:px-6">Hard Cap</th>
                   <th className="px-5 py-3 font-medium sm:px-6">TGE %</th>
                   <th className="px-5 py-3 font-medium sm:px-6">Cliff</th>
                   <th className="px-5 py-3 font-medium sm:px-6">Vesting</th>
@@ -43,9 +42,6 @@ export default function TiersTable({ embedded = false }: { embedded?: boolean } 
                     <td className="px-5 py-3 font-semibold text-ink sm:px-6">{tier.name}</td>
                     <td className="px-5 py-3 sm:px-6">
                       <Mono className="text-ink">{formatTokenPrice(tier.price)}</Mono>
-                    </td>
-                    <td className="px-5 py-3 sm:px-6">
-                      <Mono className="text-ink-dim">{formatUSD(tier.hard_cap_usd)}</Mono>
                     </td>
                     <td className="px-5 py-3 sm:px-6">
                       <Mono className="text-ink-dim">{formatPercentage(tier.tge_percentage, { showSign: false })}</Mono>

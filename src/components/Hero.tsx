@@ -60,9 +60,6 @@ export default function Hero({ cmsBuy = {} }: { cmsBuy?: CmsPageData }) {
                   <span>
                     Raised <Mono className="text-ink">{formatCompactUSD(tier.total_raised_usd)}</Mono>
                   </span>
-                  <span>
-                    Cap <Mono className="text-ink">{formatCompactUSD(tier.hard_cap_usd)}</Mono>
-                  </span>
                 </div>
                 <ProgressBar pct={parseFloat(tier.progress_pct)} />
                 <div className="mt-1.5 flex items-center justify-between text-xs text-ink-dim">

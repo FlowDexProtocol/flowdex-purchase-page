@@ -384,7 +384,7 @@ export default function DashboardShell({
 
         {/* Stats bar */}
         <div className="border-b border-border bg-bg-soft shrink-0">
-          <div className="grid grid-cols-2 gap-2 p-3 sm:grid-cols-4 sm:gap-3 sm:px-6 sm:py-4">
+          <div className="grid grid-cols-3 gap-2 p-3 sm:gap-3 sm:px-6 sm:py-4">
             <StatCard
               label="Total Raised"
               value={stats ? formatCompactUSD(stats.total_raised_usd) : '—'}
@@ -405,11 +405,6 @@ export default function DashboardShell({
               }
               loading={!tier}
               progress={tier && !tier.message ? parseFloat(tier.progress_pct) : undefined}
-            />
-            <StatCard
-              label="Total Buyers"
-              value={stats ? stats.total_buyers.toLocaleString() : '—'}
-              loading={!stats}
             />
           </div>
         </div>

@@ -29,6 +29,8 @@ export interface TierCurrent {
   total_raised_usd: number;
   hard_cap_usd: number;
   progress_pct: string;
+  /** FDP still buyable at this tier's price. Sent by /api/tiers/current. */
+  tokens_remaining: number;
   tge_percentage: number;
   cliff_months: number;
   vest_months: number;

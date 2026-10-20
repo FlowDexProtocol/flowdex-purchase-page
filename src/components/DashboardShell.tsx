@@ -4,7 +4,7 @@ import { type ReactNode, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useWallet } from '@/context/wallet-context';
 import { useTierCurrent, usePublicStats } from '@/lib/hooks';
-import { formatCompactUSD, formatPercentage, formatTokenPrice, truncateWallet } from '@/lib/format';
+import { formatCompactUSD, formatTokenPrice, truncateWallet } from '@/lib/format';
 import { cms, type CmsPageData } from '@/lib/cms';
 import { sanitizeImageUrl } from '@/lib/url-safety';
 import { Button, Card, Mono, ProgressBar } from './ui';
@@ -396,15 +396,17 @@ export default function DashboardShell({
               loading={!tier}
               accent
             />
+            {/* Tokens left rather than percent filled: a percentage against a
+                known raised figure gives away the tier cap by division. The
+                progress prop is dropped with it, for the same reason. */}
             <StatCard
-              label="Tier Progress"
+              label="Tokens Left"
               value={
                 tier && !tier.message
-                  ? formatPercentage(tier.progress_pct, { decimals: 1, showSign: false })
+                  ? `${new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 2 }).format(tier.tokens_remaining)} FDP`
                   : '—'
               }
               loading={!tier}
-              progress={tier && !tier.message ? parseFloat(tier.progress_pct) : undefined}
             />
           </div>
         </div>

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useTierCurrent } from '@/lib/hooks';
 import { formatCompactUSD, formatTokenPrice } from '@/lib/format';
 import { cms, type CmsPageData } from '@/lib/cms';
-import { Badge, Container, Mono, ProgressBar, Spinner } from './ui';
+import { Badge, Container, Mono, Spinner } from './ui';
 import WalletsConnectedCounter from './WalletsConnectedCounter';
 
 export default function Hero({ cmsBuy = {} }: { cmsBuy?: CmsPageData }) {
@@ -61,7 +61,6 @@ export default function Hero({ cmsBuy = {} }: { cmsBuy?: CmsPageData }) {
                     Raised <Mono className="text-ink">{formatCompactUSD(tier.total_raised_usd)}</Mono>
                   </span>
                 </div>
-                <ProgressBar pct={parseFloat(tier.progress_pct)} />
                 <div className="mt-1.5 flex items-center justify-between text-xs text-ink-dim">
                   <Mono>{new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 2 }).format(tier.tokens_remaining)} FDP left</Mono>
                   {tier.bonus && <Badge tone="green">{tier.bonus} bonus</Badge>}
